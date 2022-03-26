@@ -1,0 +1,82 @@
+{
+    "name": "InputsActions",
+    "maps": [
+        {
+            "name": "Player Action Map",
+            "id": "7aa156d8-c72a-4e46-adc5-20cc1c10599e",
+            "actions": [
+                {
+                    "name": "right",
+                    "type": "Button",
+                    "id": "eccbcff5-cff6-43af-b4f6-93b0bb04eb9a",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "left",
+                    "type": "Button",
+                    "id": "b701b53d-6b75-4bae-863f-cb4f502d51ba",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "shoot",
+                    "type": "Button",
+                    "id": "4de732bc-9449-4060-b9b6-d1cc07d78b5d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d35c9cdd-2c7e-4e70-9ae6-b8978bf5b415",
+                    "path": "<Keyboard>/d",
+                    "interactions": "Press(behavior=2)",
+                    "processors": "",
+                    "groups": "keyboard",
+                    "action": "right",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1a7f7e6f-02c0-4e03-84dd-21a95b8de60e",
+                    "path": "<Keyboard>/a",
+                    "interactions": "Press(behavior=2)",
+                    "processors": "",
+                    "groups": "keyboard",
+                    "action": "left",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3ec1ac62-b1a3-4a72-bef2-44ee4d5ddeb8",
+                    "path": "<Keyboard>/space",
+                    "interactions": "Press",
+                    "processors": "",
+                    "groups": "keyboard",
+                    "action": "shoot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "keyboard",
+            "bindingGroup": "keyboard",
+            "devices": []
+        },
+        {
+            "name": "android",
+            "bindingGroup": "android",
+            "devices": []
+        }
+    ]
+}

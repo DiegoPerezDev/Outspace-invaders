@@ -16,17 +16,21 @@ public class PlayerBullet : MonoBehaviour
     void OnCollisionEnter2D(Collision2D collision)
     {
         string colidedObject = collision.gameObject.tag;
-        if(colidedObject == "ScreenCollider")
+        if (colidedObject == "ScreenCollider")
         {
             if (gameObject)
                 Destroy(gameObject);
         }
-        else if(colidedObject == "Enemy")
+        else if (colidedObject == "Enemy")
         {
-            Destroy(collision.gameObject);
             if (gameObject)
                 Destroy(gameObject);
-            Player.OnGatheringScore?.Invoke();
+            // Destroy game object
+            Destroy(collision.gameObject);
+            AlienArmy.OnAlienDestroyed?.Invoke();
+            var AlienArmyCode = collision.gameObject.GetComponentInParent<AlienArmy>();
+            AlienArmyCode.RemoveAlienFromArmy(collision.gameObject.GetComponent<Alien>());
+            collision.gameObject.GetComponentInParent<AlienArmy_Movement>().SlowArmyByAlienKill();
         }
         else if (colidedObject == "EnemyAttack")
         {

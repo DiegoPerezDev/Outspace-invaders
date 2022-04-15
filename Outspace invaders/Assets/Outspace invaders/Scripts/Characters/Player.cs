@@ -16,7 +16,7 @@ public class Player : MonoBehaviour
     private Vector2 playerSize, startPosition;
     
     public delegate void PlayerAchieventsDelegate();
-    public static PlayerAchieventsDelegate OnGatheringScore, OnLosingLive, OnDying;
+    public static PlayerAchieventsDelegate OnLosingLive, OnDying;
 
 
     void OnEnable()

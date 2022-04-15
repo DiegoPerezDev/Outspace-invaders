@@ -4,182 +4,129 @@ using UnityEngine;
 
 public class AlienArmy : MonoBehaviour
 {
-    public float bulletVel = 6f;
-    [HideInInspector] public AlienArmyGenerator generatorCode;
-    [SerializeField] private float rhythmDelay = 0.2f, shootDelay, xMoveDistance = 0.2f, yMoveDistance = 0.4f;
-    private readonly List<GameObject> aliens = new List<GameObject>();
-    private readonly List<List<Rigidbody2D>> rowsOfAliens = new List<List<Rigidbody2D>>();
-    private readonly List<GameObject> aliensFromUpperColumn = new List<GameObject>();
-    private GameObject alienMoreInLeft, alienMoreInRight, bulletPrefab;
-    private int armyRows, armyColumns;
-    private bool movingRight = true;
-    
+    public delegate void AlienBehaviour();
+    public static        AlienBehaviour OnAlienDestroyed;
+    [HideInInspector] public readonly List<GameObject> aliens = new List<GameObject>();
+    [HideInInspector] public readonly List<List<Alien>> aliensByRows = new List<List<Alien>>();
+    [HideInInspector] public readonly List<List<Alien>> aliensByColumns = new List<List<Alien>>();
+    [HideInInspector] public int      armyRowsAtStart, armyColumnsAtStart;
+    [HideInInspector] public int      totalAmount, currentAmount, lastTwentyPercentAliens;
+    [HideInInspector] public Vector2  alienSize, distanceBetweenAliens;
 
+
+    void OnEnable() => OnAlienDestroyed += EnemyDestruction;
+    void OnDisable() => OnAlienDestroyed -= EnemyDestruction;
     void Start()
     {
-        // Get data of the army from the army generator code
+        GetDataFromGeneratorCode();
+        SetAliensData();
+        // Add the Alien army behaviour scripts after the data setting, because we need that data even at the start method of those scripts. Thats why we cant let happen the posibility of starting this script after those.
+        gameObject.AddComponent<AlienArmy_Movement>();
+        gameObject.AddComponent<AlienArmy_AttackBehaviour>();
+    }
+
+    /// <summary>
+    /// Remove an specific alien of all of the lists and other relevant data in this alien army code
+    /// </summary>
+    /// <param name="alienToRemove">Alien script attached to the alien gameObject to get it specific data for the removal.</param>
+    public void RemoveAlienFromArmy(Alien alienToRemove)
+    {
+        // The destroyed alien is not gonna be in count for the next movements, this evades checking on components constantly
+        alienToRemove.isAlive = false;
+
+        // Check if there is any alien alive in the row, else remove the row from the list
+        for (int i = 0; i < armyColumnsAtStart; i++)
+        {
+            if (aliensByRows[alienToRemove.position.y][i].isAlive)
+                goto Checkcolumns;
+        }
+        // A row is being removed so we have to move the rest of the rows positions
+        aliensByRows.RemoveAt(alienToRemove.position.y);
+        for (int i = 0; i < aliensByRows.Count; i++)
+        {
+            if (i >= alienToRemove.position.y)
+            {
+                for (int j = 0; j < armyColumnsAtStart; j++)
+                    aliensByRows[i][j].position.y--;
+            }
+        }
+        print($"Removing row #{alienToRemove.position.y}. Number of rows: {aliensByRows.Count}");
+
+    Checkcolumns:
+        // Check if there is any alien alive in the column, else remove the column from the list
+        for (int i = 0; i < armyRowsAtStart; i++)
+        {
+            if (aliensByColumns[alienToRemove.position.x][i].isAlive)
+                return;
+        }
+        // A column is being removed so we have to move the rest of the columns positions
+        aliensByColumns.RemoveAt(alienToRemove.position.x);
+        print($"Removing column #{alienToRemove.position.x}. Number of columns: {aliensByColumns.Count}");
+        for (int i = 0; i < aliensByColumns.Count; i++)
+        {
+            if (i >= alienToRemove.position.x)
+            {
+                for (int j = 0; j < armyRowsAtStart; j++)
+                    aliensByColumns[i][j].position.x--;
+            }
+        }
+    }
+    /// <summary>
+    /// Get data of the army features from the army generator code, those will be needed for the other scripts that manage the alien army behaviour
+    /// </summary>
+    private void GetDataFromGeneratorCode()
+    {
+        var generatorCode = gameObject.GetComponentInParent<AlienArmyGenerator>();
         if (generatorCode != null)
         {
-            armyRows = generatorCode.armyRows;
-            armyColumns = generatorCode.armyColumns;
+            alienSize = generatorCode.alienSize;
+            distanceBetweenAliens = generatorCode.distanceBetweenAliens;
+            armyRowsAtStart = generatorCode.armyRows;
+            armyColumnsAtStart = generatorCode.armyColumns;
+            currentAmount = totalAmount = armyRowsAtStart * armyColumnsAtStart;
         }
         else
         {
-            print("generator code not found and is crutial for the performance!");
+            print("army generator code not found and is imprescindible!");
             Destroy(this);
-            return;
+            Debug.Break();
         }
-
+    }
+    private void SetAliensData()
+    {
         // Get aliens gameObjects
         Transform[] childs = GetComponentsInChildren<Transform>();
         for (int i = 1; i < childs.Length; i++)
             aliens.Add(childs[i].gameObject);
 
-        // Get the aliens by columns so we can detect the screen bound just with them¿
-        SetAliensLists();
-
-        // Start aliens constant actions
-        StartCoroutine(RhythmicMovement());
-        shootDelay = rhythmDelay * armyRows;
-        bulletPrefab = Resources.Load<GameObject>("Prefabs/Characters/Aliens/AliensBullet");
-        if ( (bulletPrefab != null) || (shootDelay == 0) )
-            StartCoroutine(RhythmicShooting());
-        else
-            print("Cant start the aliens shooting.");
-    }
-
-    private void SetAliensLists()
-    {
-        for (int i = 0; i < armyRows; i++)
+        // Order aliens by rows and columns lists
+        for (int y = 0; y < armyRowsAtStart; y++)
         {
-            var currentRowOfAliens = new List<Rigidbody2D>();
-            for (int j = 0; j < armyColumns; j++)
+            var currentRowOfAliens = new List<Alien>();
+            for (int x = 0; x < armyColumnsAtStart; x++)
             {
-                // Take the top corner aliens to detect the screen bounds later
-                if (i == 0)
-                {
-                    aliensFromUpperColumn.Add(aliens[j]);
-                    if (j == 0)
-                        alienMoreInLeft = aliens[j];
-                    else if (j == armyColumns - 1)
-                        alienMoreInRight = aliens[j];
-                }
-                // Get all of the aliens of one row for the movement that is done row by row
-                var currentAlien = aliens[((armyColumns + 1) * i) + j - i].GetComponent<Rigidbody2D>();
-                if (currentAlien != null)
-                    currentRowOfAliens.Add(currentAlien);
+                var newAlienCode = aliens[((armyColumnsAtStart + 1) * y) + x - y].AddComponent<Alien>();
+                newAlienCode.SetAlien(new Vector2Int(x, y), aliens[((armyColumnsAtStart + 1) * y) + x - y].GetComponent<Rigidbody2D>());
+                currentRowOfAliens.Add(newAlienCode);
             }
-            rowsOfAliens.Add(currentRowOfAliens);
+            aliensByRows.Add(currentRowOfAliens);
+        }
+        for (int x = 0; x < armyColumnsAtStart; x++)
+        {
+            var currentColumnOfAliens = new List<Alien>();
+            for (int y = 0; y < armyRowsAtStart; y++)
+            {
+                var alienCode = aliens[((armyColumnsAtStart + 1) * y) + x - y].GetComponent<Alien>();
+                currentColumnOfAliens.Add(alienCode);
+            }
+            aliensByColumns.Add(currentColumnOfAliens);
         }
     }
-    private IEnumerator RhythmicMovement()
+    private void EnemyDestruction()
     {
-        // Check Lateral screen bounds to know the movement direction.
-        bool moveDown;
-        if (movingRight)
-        {
-            while (alienMoreInRight == null)
-            {
-                print("right corner alien not found, asigning new right corner alien");
-                yield return null;
-                aliensFromUpperColumn.RemoveAt(aliensFromUpperColumn.Count - 1);
-                if (aliensFromUpperColumn.Count == 0)
-                    yield break;
-                alienMoreInRight = aliensFromUpperColumn[aliensFromUpperColumn.Count - 1];
-            }
-            moveDown = (alienMoreInRight.transform.position.x + generatorCode.alienSize.x + generatorCode.xDistanceBetweenAliens >= ScreenBounds.rightLevelBound);
-        }
-        else
-        {
-            while (alienMoreInLeft == null)
-            {
-                print("left corner alien not found, asigning new left corner alien");
-                yield return null;
-                aliensFromUpperColumn.RemoveAt(0);
-                if (aliensFromUpperColumn.Count == 0)
-                    yield break;
-                alienMoreInLeft = aliensFromUpperColumn[0];
-            }
-            moveDown = (alienMoreInLeft.transform.position.x - generatorCode.alienSize.x - generatorCode.xDistanceBetweenAliens <= ScreenBounds.leftScreenBound);
-        }
-        
-        // Move aliens
-        for(int i = rowsOfAliens.Count - 1; i > -1; i--)
-        {
-            // Move aliens row by row depending on the direction
-            var actualRow = rowsOfAliens[i];
-            for(int j = 0; j < armyColumns; j++)
-            {
-                // Get rid of an alien that is no longer in the row
-                if (actualRow[j] == null)
-                {
-                    if (actualRow.Count < j)
-                        actualRow.RemoveAt(j);
-                    if (actualRow.Count == 0)
-                        rowsOfAliens.RemoveAt(i);
-                    else
-                        rowsOfAliens[i] = actualRow;
-                    continue;
-                }
-                // Move row of aliens
-                if (moveDown)
-                {
-                    if (movingRight)
-                        actualRow[j].MovePosition(actualRow[j].position + new Vector2(-xMoveDistance, -yMoveDistance));
-                    else
-                        actualRow[j].MovePosition(actualRow[j].position + new Vector2(xMoveDistance, -yMoveDistance));
-                }
-                else
-                {
-                    if (movingRight)
-                        actualRow[j].MovePosition(actualRow[j].position + new Vector2(xMoveDistance, 0f));
-                    else
-                        actualRow[j].MovePosition(actualRow[j].position + new Vector2(-xMoveDistance, 0f));
-                }
-            }
-
-            // Delay between the rows movements
-            var timer = 0f;
-            while (timer < rhythmDelay)
-            {
-                yield return null;
-                timer += Time.deltaTime;
-            }
-        }
-
-        if (moveDown)
-            movingRight = !movingRight;
-        
-
-        // Restart
-        StartCoroutine(RhythmicMovement());
-    }
-    private IEnumerator RhythmicShooting()
-    {
-        // Delay
-        var timer = 0f;
-        while(timer < shootDelay)
-        {
-            yield return null;
-            timer += Time.deltaTime;
-        }
-
-        // Select an alien to shoot
-        GameObject alienToShoot = null;
-        if(aliens[0] != null)
-            alienToShoot = aliens[0];
-        else
-            yield break;
-
-        // Shoot
-        var bullet = Instantiate(bulletPrefab, alienToShoot.transform.position, Quaternion.identity);
-        bullet.transform.parent = transform; 
-        var bulletCode = bullet.GetComponent<AliensBullet>();
-        if(bulletCode)    
-            bulletCode.alienArmyCode = this;
-
-        // Restart
-        StartCoroutine(RhythmicShooting());
+        currentAmount--;
+        if (currentAmount < 1)
+            Destroy(this);
     }
 
 }

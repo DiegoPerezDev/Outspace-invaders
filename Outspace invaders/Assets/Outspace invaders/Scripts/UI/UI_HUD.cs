@@ -10,12 +10,12 @@ public class UI_HUD : MonoBehaviour
     
     private void OnEnable()
     {
-        Player.OnGatheringScore += AddScore;
+        AlienArmy.OnAlienDestroyed += AddScore;
         Player.OnLosingLive += SubstractLive;
     }
     private void OnDisable()
     {
-        Player.OnGatheringScore -= AddScore;
+        AlienArmy.OnAlienDestroyed -= AddScore;
         Player.OnLosingLive -= SubstractLive;
     }
     void Start()

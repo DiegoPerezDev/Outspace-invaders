@@ -50,7 +50,7 @@ public class GameManager : MonoBehaviour
     {
         // General settings
         //Application.runInBackground = false;
-        Debug.developerConsoleVisible = true;
+        //Debug.developerConsoleVisible = true;
 
         // Set delegate events
         OnLevelStartingSet += SetLevel;

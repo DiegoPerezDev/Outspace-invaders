@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3151756513559093493}
   - component: {fileID: 495971871439349439}
   - component: {fileID: 6564705654538798221}
+  - component: {fileID: -6879119229081124490}
   m_Layer: 0
   m_Name: Alien
   m_TagString: Enemy
@@ -131,3 +132,22 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &-6879119229081124490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7313115160187034934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba18ad6b3daeca7408952a96fb8e5b8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startArmyRows: 0
+  startArmyColumns: 0
+  totalAliens: 0
+  lastTwentyPercentAliens: 0
+  aliensAmount: 0
+  alienSize: {x: 0, y: 0}
+  distanceBetweenAliens: {x: 1, y: 1}

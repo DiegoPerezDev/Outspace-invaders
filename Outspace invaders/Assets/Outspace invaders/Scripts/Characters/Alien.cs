@@ -4,20 +4,16 @@ using UnityEngine;
 
 public class Alien : MonoBehaviour
 {
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        string colidedObject = collision.gameObject.tag;
-        if (colidedObject == "PlayerAttack")
-        {
-            // Destroy bullet and self
-            if (collision.gameObject)
-                Destroy(collision.gameObject);
-            if (gameObject)
-                Destroy(gameObject);
+    [HideInInspector] public Vector2Int position, firstPosition;
+    [HideInInspector] public Rigidbody2D rigidBody;
+    [HideInInspector] public bool isAlive; 
 
-            // Make the player gather point
-            Player.OnGatheringScore?.Invoke();
-        }
+    public void SetAlien(Vector2Int position, Rigidbody2D rigidBody)
+    {
+        this.position = position;
+        this.rigidBody = rigidBody;
+        isAlive = true;
+        firstPosition = this.position;
     }
 
 }

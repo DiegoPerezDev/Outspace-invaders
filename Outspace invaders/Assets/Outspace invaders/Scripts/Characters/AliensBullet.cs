@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class AliensBullet : MonoBehaviour
 {
-    public AlienArmy alienArmyCode;
-
     void Start() => //Invoke("AddSpeed",0.02f);
                     AddSpeed();
     void OnTriggerEnter2D(Collider2D collision)
@@ -28,6 +26,6 @@ public class AliensBullet : MonoBehaviour
         }
     }
 
-    private void AddSpeed() => GetComponent<Rigidbody2D>().velocity = new Vector2(0f, -alienArmyCode.bulletVel);
+    private void AddSpeed() => GetComponent<Rigidbody2D>().velocity = new Vector2(0f, -AlienArmy_AttackBehaviour.bulletVel);
 
 }

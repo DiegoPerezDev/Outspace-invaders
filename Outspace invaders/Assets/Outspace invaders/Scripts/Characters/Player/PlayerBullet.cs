@@ -12,32 +12,25 @@ public class PlayerBullet : MonoBehaviour
         StartCoroutine(AutoDestructionDelay());
         AddSpeed();
     }
-    void OnDestroy() => playerThatShootThis.StartCoroutine(playerThatShootThis.DelayBeforeShootingAgain());
+    void OnDestroy()
+    {
+        playerThatShootThis.StartCoroutine(playerThatShootThis.DelayBeforeShootingAgain());
+        StopAllCoroutines();
+    }
     void OnCollisionEnter2D(Collision2D collision)
     {
+        if (gameObject)
+            Destroy(gameObject);
+
         string colidedObject = collision.gameObject.tag;
-        if (colidedObject == "ScreenCollider")
+        if (colidedObject == "Enemy")
         {
-            if (gameObject)
-                Destroy(gameObject);
-        }
-        else if (colidedObject == "Enemy")
-        {
-            if (gameObject)
-                Destroy(gameObject);
-            // Destroy game object
             Destroy(collision.gameObject);
+            AlienArmy.RemovingAlien(collision.gameObject.GetComponent<Alien>());
             AlienArmy.OnAlienDestroyed?.Invoke();
-            var AlienArmyCode = collision.gameObject.GetComponentInParent<AlienArmy>();
-            AlienArmyCode.RemoveAlienFromArmy(collision.gameObject.GetComponent<Alien>());
-            collision.gameObject.GetComponentInParent<AlienArmy_Movement>().SlowArmyByAlienKill();
         }
         else if (colidedObject == "EnemyAttack")
-        {
             Destroy(collision.gameObject);
-            if (gameObject)
-                Destroy(gameObject);
-        }
     }
 
     private void AddSpeed() => GetComponent<Rigidbody2D>().velocity = new Vector2(0f, playerThatShootThis.bulletVel);

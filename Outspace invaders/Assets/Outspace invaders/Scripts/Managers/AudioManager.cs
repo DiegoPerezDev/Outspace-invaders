@@ -22,18 +22,18 @@ public class AudioManager : MonoBehaviour
     private void OnEnable()
     {
         GameManager.OnStartingScene += StartingScene;
-        GameManager.OnLevelStarted += LevelStart;
+        GameManager.OnLevelStart += LevelStart;
         GameManager.OnLoseGame += LoseLevel;
     }
     private void OnDisable()
     {
         GameManager.OnStartingScene -= StartingScene;
-        GameManager.OnLevelStarted -= LevelStart;
+        GameManager.OnLevelStart -= LevelStart;
         GameManager.OnLoseGame -= LoseLevel;
     }
 
 
-    #region Delegate functions
+    #region Level settings functions
 
     private void StartingScene()
     {
@@ -55,7 +55,6 @@ public class AudioManager : MonoBehaviour
     }
     private void LevelStart() => PlayLevelSong(Songs.level);
     private void LoseLevel() => StopLevelSong();
-        //PlayAudio(UI_AudioSource, UI_MenusManagement.UI_Clips[(int)UI_MenusManagement.UI_AudioNames.lose]);
     
 
     #endregion

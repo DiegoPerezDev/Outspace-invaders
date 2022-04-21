@@ -23,22 +23,17 @@ public class UI_MenusManagement : MonoBehaviour
     private void OnEnable()
     {
         GameManager.OnStartingScene += StartingScene;
-        GameManager.OnLevelStarted += LevelStart;
+        GameManager.OnLevelStart += LevelStart;
         GameManager.OnLoseGame += Lose;
-        GameManager.OnPausingMenu += OpenPauseMenu;
-        GameManager.OnUnpausingMenu += CloseMenu;
+        GameManager.OnPausingMenu += EnablePauseMenu;
     }
     private void OnDisable()
     {
         GameManager.OnStartingScene -= StartingScene;
-        GameManager.OnLevelStarted -= LevelStart;
+        GameManager.OnLevelStart -= LevelStart;
         GameManager.OnLoseGame -= Lose;
-        GameManager.OnPausingMenu -= OpenPauseMenu;
-        GameManager.OnUnpausingMenu -= CloseMenu;
+        GameManager.OnPausingMenu -= EnablePauseMenu;
     }
-
-
-    #region Delagate functions
 
     private void StartingScene()
     {
@@ -71,17 +66,42 @@ public class UI_MenusManagement : MonoBehaviour
         canvasesGameObjects[(int)Menus.loading].SetActive(false);
     }
     private static void Lose() => canvasesGameObjects[(int)Menus.HUD].SetActive(false);
-    private void OpenPauseMenu()
+    /// <summary>
+    /// Open or closes the pause menu, 
+    /// </summary>
+    private void EnablePauseMenu(bool enabling)
     {
-        AudioManager.PlayAudio(AudioManager.UI_AudioSource, UI_Clips[(int)UI_AudioNames.pause]);
-        OpenMenu(Menus.pause);
-        canvasesGameObjects[(int)Menus.HUD].SetActive(false);
+        if (enabling)
+        {
+            AudioManager.PlayAudio(AudioManager.UI_AudioSource, UI_Clips[(int)UI_AudioNames.pause]);
+            OpenMenu(Menus.pause);
+            canvasesGameObjects[(int)Menus.HUD].SetActive(false);
+        }
+        // Close last menu of the UI. Open previous menu if its the case. Unpause the game if closing the pause menu.
+        else
+        {
+            // Only close an available panel to close
+            if (openedMenus.Count < 1)
+                return;
+            if (openedMenus.Last() == canvasesGameObjects[(int)Menus.mainMenu])
+                return;
+
+            // Open previous panel if it's not the main menu panel
+            if (openedMenus[openedMenus.Count - 2] != canvasesGameObjects[(int)Menus.mainMenu])
+                openedMenus[openedMenus.Count - 2].SetActive(true);
+
+            // Unpause the game and re-open the HUD if closing the pause menu
+            if (openedMenus.Last() == canvasesGameObjects[(int)Menus.pause])
+            {
+                GameManager.Pause(false, false);
+                canvasesGameObjects[(int)Menus.HUD].SetActive(true);
+            }
+
+            // Close current panel
+            openedMenus.Last().SetActive(false);
+            openedMenus.Remove(openedMenus.Last());
+        }
     }
-
-    #endregion
-
-    #region Panel management
-
     /// <summary> Open a new panel menu of the UI. </summary>
     /// <param name="panelToGo"> Enum of the panel of this class for easy use.</param>
     private static void OpenMenu(Menus panelToGo)
@@ -90,32 +110,5 @@ public class UI_MenusManagement : MonoBehaviour
         openedMenus.Last().SetActive(false);                    // Close previous menu
         openedMenus.Add(canvasesGameObjects[(int)(panelToGo)]); // Add new menu to the list of opened menus
     }
-
-    /// <summary> Close last menu of the UI. Open previous menu if its the case. Unpause the game if closing the pause menu. </summary>
-    public static void CloseMenu()
-    {
-        // Only close an available panel to close
-        if (openedMenus.Count < 1)
-            return;
-        if (openedMenus.Last() == canvasesGameObjects[(int)Menus.mainMenu])
-            return;
-
-        // Open previous panel if it's not the main menu panel
-        if (openedMenus[openedMenus.Count - 2] != canvasesGameObjects[(int)Menus.mainMenu])
-            openedMenus[openedMenus.Count - 2].SetActive(true);
-
-        // Unpause the game and re-open the HUD if closing the pause menu
-        if (openedMenus.Last() == canvasesGameObjects[(int)Menus.pause])
-        {
-            GameManager.Pause(false, false);
-            canvasesGameObjects[(int)Menus.HUD].SetActive(true);
-        }
-
-        // Close current panel
-        openedMenus.Last().SetActive(false);
-        openedMenus.Remove(openedMenus.Last());
-    }
-
-    #endregion
 
 }

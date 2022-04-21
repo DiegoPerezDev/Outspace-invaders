@@ -22,51 +22,20 @@ public sealed class InputsManager
 #endif
 
 
+    /// <summary>
+    /// Start function of this class, kind of a constructor
+    /// </summary>
     public static void SetInputManager()
     {
         input = new InputsActionsG();
         SetInputMask();
-        GameManager.OnLevelStarted += LevelStart;
+        GameManager.OnLevelStart += LevelStart;
         GameManager.OnLoseGame += LoseLevel;
-        GameManager.OnPausing += DisablePlayerActionMaps;
-        GameManager.OnUnpausing += EnablePlayerActionMaps;
+        GameManager.OnPausing += EnablePlayerActionMaps;
     }
-
-    #region Delegate functions
-
-    private static void LevelStart()
-    {
-        if (input != null)
-            input.PlayerActionMap.Enable();
-
-        // Get player script
-        var playersGO = GameObject.FindGameObjectsWithTag("Player");
-        for (int i = 0; i < playersGO.Length; i++)
-        {
-            Player playerCodeTemp = playersGO[i].GetComponent<Player>();
-            if (playerCodeTemp != null)
-            {
-                playerCode = playerCodeTemp;
-                goto PlayerFound;
-            }
-        }
-        Debug.Log("Couldn't find any 'Player' script attached to any gameObjects with tag 'Player'.");
-        return;
-
-        PlayerFound:;
-        SetPlayerInputsCallbacks();
-    }
-
-    private static void LoseLevel() => input.PlayerActionMap.Disable();
-
-    private static void EnablePlayerActionMaps() => input.PlayerActionMap.Enable();
-
-    private static void DisablePlayerActionMaps() => input.PlayerActionMap.Disable();
-
-    #endregion
-
-    #region Input system settings
-
+    /// <summary>
+    /// Set input mask, the one that tells the game which device we are using for inputs, xbox controller for example
+    /// </summary>
     private static void SetInputMask()
     {
 #if UNITY_STANDALONE
@@ -77,14 +46,17 @@ public sealed class InputsManager
         input.bindingMask = InputBinding.MaskByGroup("android");
 #endif
     }
-    
+
+    #region Player input actions functions
+
+    /// <summary>
+    /// Set the call backs of the input action maps, this mean that we tell what to do when performing the inputs.
+    /// </summary>
     private static void SetPlayerInputsCallbacks()
     {
 #if UNITY_STANDALONE
         //input.PlayingInputs.pause.performed += ctx => GameManager.Pause(true);
         //input.MenuInputs.back.performed += ctx => UI_MenusManagement.CloseMenu();
-        if (!playerCode)
-            return;
 
         input.PlayerActionMap.right.started += ctx => playerCode.movingRight = true;
         input.PlayerActionMap.right.canceled += ctx => playerCode.movingRight = false;
@@ -93,10 +65,49 @@ public sealed class InputsManager
         input.PlayerActionMap.shoot.performed += ctx => playerCode.shootAttempt = true;
 #endif
     }
+    /// <summary>
+    /// Enable or disable the action maps that manages the player itself, not the menu
+    /// </summary>
+    private static void EnablePlayerActionMaps(bool disabling)
+    {
+        if (disabling)
+            input.PlayerActionMap.Disable();
+        else
+            input.PlayerActionMap.Enable();
+    }
 
     #endregion
 
-    #region  Input functions
+    #region  Level functions
+
+    /// <summary>
+    /// Set data and get components needed from a level scene at the start of this one
+    /// </summary>
+    private static void LevelStart()
+    {
+        if (input != null)
+            input.PlayerActionMap.Enable();
+
+        // Get player script
+        var playersGO = GameObject.FindGameObjectsWithTag("Player");
+        if (playersGO.Length == 1)
+        {
+            Player playerCodeTemp = playersGO[0].GetComponent<Player>();
+            if (playerCodeTemp != null)
+            {
+                playerCode = playerCodeTemp;
+                SetPlayerInputsCallbacks();
+            }
+            else
+                Debug.Log("Couldn't find any 'Player' script attached to the player gameObject.");
+        }
+        else
+            Debug.Log("Couldn't find any gameObjects with tag 'Player'.");
+    }
+    /// <summary>
+    /// Set the inputs for when the user loses the game. Usually just disable the players action maps.
+    /// </summary>
+    private static void LoseLevel() => EnablePlayerActionMaps(false);
 
     /*
     private static void CheckIfTapOnButton()

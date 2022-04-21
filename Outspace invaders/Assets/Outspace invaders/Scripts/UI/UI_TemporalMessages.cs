@@ -5,12 +5,12 @@ using TMPro;
 
 public class UI_TemporalMessages : MonoBehaviour
 {
+    public static string levelDifficultyMessage = "Very Easy";
+    public static readonly float levelIndicatorDuration = 2f, newRecordAnimationDuration = 2f;
     public static UI_TemporalMessages instance;
     public static TextMeshProUGUI newRecordTMP, levelMessageTMP;
     [SerializeField] private TextMeshProUGUI newRecordText, levelMessageText;
     private static IEnumerator newRecordMessageCoroutine, newDifficultyMessageCoroutine;
-    public static string levelDifficultyMessage = "Very Easy";
-    public static readonly float levelIndicatorDuration = 2f, newRecordAnimationDuration = 2f;
 
 
     void Awake()
@@ -27,18 +27,31 @@ public class UI_TemporalMessages : MonoBehaviour
     }
     void OnEnable()
     {
-        GameManager.OnLevelStarted += StartMessageShortShow;
+        GameManager.OnLevelStart += ShowStartMessage;
         GameManager.OnLoseGame += SetMessagestAtLose;
     }
     private void OnDisable()
     {
-        GameManager.OnLevelStarted -= StartMessageShortShow;
+        GameManager.OnLevelStart -= ShowStartMessage;
         GameManager.OnLoseGame -= SetMessagestAtLose;
     }
 
-
-    // - - Delegate functions - -
-    private void StartMessageShortShow() => instance.StartCoroutine(LevelDifficultyMessageAtLevelStart());
+    // - - - Start, win and lose messages - - -
+    private void ShowStartMessage() => instance.StartCoroutine(LevelDifficultyMessageAtLevelStart());
+    /// <summary>
+    /// Shows a mmesage of the currend difficulty at the beggining of the level, for one second. 
+    /// </summary>
+    private static IEnumerator LevelDifficultyMessageAtLevelStart()
+    {
+        levelMessageTMP.gameObject.SetActive(true);
+        var timer = 0f;
+        while (timer < 1f)
+        {
+            yield return null;
+            timer += Time.deltaTime;
+        }
+        levelMessageTMP.gameObject.SetActive(false);
+    }
     private static void SetMessagestAtLose()
     {
         // Stop and close new difficulty message
@@ -61,7 +74,7 @@ public class UI_TemporalMessages : MonoBehaviour
         */
     }
 
-    // - - Public methods - - 
+    // - - - Score messages - - - 
     public static void ShowNewRecordMessage()
     {
         if (newRecordMessageCoroutine != null)
@@ -72,28 +85,6 @@ public class UI_TemporalMessages : MonoBehaviour
         newRecordMessageCoroutine = NewRecordMessageAnimation();
         instance.StartCoroutine(newRecordMessageCoroutine);
     }
-    public static void ShowNewLevelDifficulty()
-    {
-        if (newDifficultyMessageCoroutine != null)
-            instance.StopCoroutine(newDifficultyMessageCoroutine);
-        newDifficultyMessageCoroutine = NewDifficultyMessage();
-        instance.StartCoroutine(newDifficultyMessageCoroutine);
-    }
-
-    // - - - Corroutines - - -
-    /// <summary> Shows a mmesage of the currend difficulty at the beggining of the level, for one second. </summary>
-    private static IEnumerator LevelDifficultyMessageAtLevelStart()
-    {
-        levelMessageTMP.gameObject.SetActive(true);
-        var timer = 0f;
-        while (timer < 1f)
-        {
-            yield return null;
-            timer += Time.deltaTime;
-        }
-        levelMessageTMP.gameObject.SetActive(false);
-    }
-    /// <summary>  New record blinking animation in the GUI. </summary>
     private static IEnumerator NewRecordMessageAnimation()
     {
         newRecordTMP.gameObject.SetActive(true);
@@ -115,6 +106,15 @@ public class UI_TemporalMessages : MonoBehaviour
 
         newRecordTMP.gameObject.SetActive(false);
     }
+    public static void ShowNewLevelDifficulty()
+    {
+        if (newDifficultyMessageCoroutine != null)
+            instance.StopCoroutine(newDifficultyMessageCoroutine);
+        newDifficultyMessageCoroutine = NewDifficultyMessage();
+        instance.StartCoroutine(newDifficultyMessageCoroutine);
+    }
+
+    // - - - Difficulty messages - - -
     /// <summary> Temporally shows the difficulty of the level.</summary>
     /// <param name="message"> Message to display in the text. </param>
     private static IEnumerator NewDifficultyMessage()

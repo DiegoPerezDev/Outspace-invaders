@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Alien : MonoBehaviour
 {
-    [HideInInspector] public Vector2Int position, firstPosition;
+    [HideInInspector] public Vector2Int position;
     [HideInInspector] public Rigidbody2D rigidBody;
     [HideInInspector] public bool isAlive; 
 
@@ -13,7 +13,6 @@ public class Alien : MonoBehaviour
         this.position = position;
         this.rigidBody = rigidBody;
         isAlive = true;
-        firstPosition = this.position;
     }
 
 }

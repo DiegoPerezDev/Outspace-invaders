@@ -4,21 +4,31 @@ using UnityEngine;
 using UnityEditor;
 using System.Threading.Tasks;
 
+/// <summary>
+/// This class generates the gameObjects of the alien army every time the user change the inspector variables on edit mode. Also adds the main script of the army after instancing for their set up.
+/// </summary>
 [ExecuteInEditMode]
 public class AlienArmyGenerator : MonoBehaviour
 {
-    public int armyRows = 4, armyColumns = 5;
-    public Vector2 distanceBetweenAliens = new Vector2(1f, 1f);
+    public int armyRows = 5, armyColumns = 10;
+    public Vector2 distanceBetweenAliens = new Vector2(0.3f, 0.3f);
     [HideInInspector] public  Vector2 alienSize;
     [SerializeField]  private GameObject alienPrefab;
-    [SerializeField]  private Camera currentCamera;
     [SerializeField]  private RectTransform HUD_Panel;
     [SerializeField]  private float centerHeight;
     private Vector2 centerPos;
-    private GameObject aliensParent;
     private float leftScreenBound, rightLevelBound, upScreenBound;
-    
+    private static AlienArmyGenerator instance;
 
+
+    void Awake()
+    {
+        // Singleton
+        if (instance == null)
+            instance = this;
+        else
+            Destroy(this);
+    }
     /// <summary>
     /// Try to re-create the alien army every time that the user change any variable value through inspector, except in playmode.
     /// </summary>
@@ -53,14 +63,13 @@ public class AlienArmyGenerator : MonoBehaviour
         }
 
         // Destroy existing alien armys if there are any
-        var AlienArmy = GameObject.FindGameObjectWithTag("AlienArmy");
-        if (AlienArmy != null)
-            DestroyImmediate(AlienArmy);
+        foreach(Transform child in GetComponentsInChildren<Transform>())
+        {
+            if (child == transform) continue;
+            DestroyImmediate(child.gameObject);
+        }
 
         // Create new army of aliens
-        aliensParent = new GameObject("AlienArmy");
-        aliensParent.transform.parent = GameObject.Find("Characters").transform;
-        aliensParent.tag = "AlienArmy";
         PrepareInstancingData();
         InstantiateAliensInOrder();
     }
@@ -71,9 +80,9 @@ public class AlienArmyGenerator : MonoBehaviour
     {
         // Get data needed for instancing
         alienSize = alienPrefab.GetComponent<SpriteRenderer>().size * alienPrefab.transform.lossyScale;
-        leftScreenBound = -(currentCamera.orthographicSize * 2 * Camera.main.aspect) / 2;
+        leftScreenBound = -(Camera.main.orthographicSize * 2 * Camera.main.aspect) / 2;
         rightLevelBound = -leftScreenBound - (HUD_Panel.rect.size.x * HUD_Panel.lossyScale.x);
-        upScreenBound = currentCamera.orthographicSize;
+        upScreenBound = Camera.main.orthographicSize;
         var levelWidth = (Mathf.Abs(leftScreenBound) + Mathf.Abs(rightLevelBound));
         centerPos = new Vector2((levelWidth / 2f) + leftScreenBound, centerHeight);
 
@@ -123,7 +132,7 @@ public class AlienArmyGenerator : MonoBehaviour
 
         // Instantiate the first alien, the one that tells us the position of the first row and the first column
         var firstAlienPos = new Vector2(centerPos.x + firstPos.x, centerPos.y + firstPos.y);
-        var instantiatedAlien = Instantiate(alienPrefab, aliensParent.transform);
+        var instantiatedAlien = Instantiate(alienPrefab, transform);
         instantiatedAlien.transform.position = firstAlienPos;
 
         // Instantiate the rest of the aliens in order
@@ -137,10 +146,10 @@ public class AlienArmyGenerator : MonoBehaviour
                     continue;
 
                 // Instance new alien
-                instantiatedAlien = Instantiate(alienPrefab, aliensParent.transform);
+                instantiatedAlien = Instantiate(alienPrefab, transform);
 
                 // Positioning aliens through the same row, if they are not the first one in the row
-                if(j != 0)
+                if (j != 0)
                     currentInstancingPosition += new Vector2(alienSize.x + distanceBetweenAliens.x, 0f);
                 instantiatedAlien.transform.position = currentInstancingPosition;
             }

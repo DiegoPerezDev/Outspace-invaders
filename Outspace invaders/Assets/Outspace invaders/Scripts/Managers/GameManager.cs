@@ -23,8 +23,11 @@ public class GameManager : MonoBehaviour
     public static readonly float LoseToResetDelay = 0.7f;
     public static bool playing, paused;
     public delegate void LevelDelegate();
-    public static LevelDelegate OnLevelStartingSet, OnLevelStarted, OnLoseGame;
-    public static LevelDelegate OnPausing, OnUnpausing, OnPausingMenu, OnUnpausingMenu;
+    public static LevelDelegate OnLevelSetUp, OnLevelStart, OnLoseGame;
+    public delegate void Pausing(bool pausing);
+    public static Pausing OnPausing, OnPausingMenu;
+
+    // Specific game data
     [HideInInspector] public enum Difficulties { veryEasy, easy, normal, hard, veryHard }
     public static Difficulties difficulty = Difficulties.veryEasy;
 
@@ -34,6 +37,16 @@ public class GameManager : MonoBehaviour
     private static readonly string scoreRecordValKey = "scoreRecordValKey";
 
 
+    private void OnEnable()
+    {
+        OnLevelSetUp += SetLevel;
+        OnLoseGame += LoseGame;
+    }
+    private void OnDisable()
+    {
+        OnLevelSetUp -= SetLevel;
+        OnLoseGame -= LoseGame;
+    }
     void Awake()
     {
         // Set singleton
@@ -45,25 +58,15 @@ public class GameManager : MonoBehaviour
             DontDestroyOnLoad(transform.gameObject);
         }
     }
-
     void Start()
     {
-        // General settings
-        //Application.runInBackground = false;
-        //Debug.developerConsoleVisible = true;
-
-        // Set delegate events
-        OnLevelStartingSet += SetLevel;
-        OnLoseGame += LoseGame;
-
-        // Load saved data
-        LoadLevelData(); // Use 'ResetSavingData()' in this line instead for restarting the saving data for testing purposes;
-
-        // Start game
+        // Load saved data and start the game
+        LoadLevelData(); //Use 'ResetSavingData()' instead for restarting the saving data for testing purposes
         RestartGame();
     }
-
-    // Behaviour of the game when minimizing. In this case we open the pause menu.
+    /// <summary>
+    /// Behaviour of the game when minimizing. In this case we open the pause menu.
+    /// </summary>
     void OnApplicationPause(bool pauseStatus)
     {
         if (!pauseStatus || !playing)
@@ -75,6 +78,9 @@ public class GameManager : MonoBehaviour
 
     #region Game Restarting
 
+    /// <summary>
+    /// Restart the whole game to the main menu.
+    /// </summary>
     public static void RestartGame()
     {
         if (loadingState == LoadingStates.none)
@@ -83,54 +89,46 @@ public class GameManager : MonoBehaviour
             instance.StartCoroutine(RestartToMainmenu());
         }
     }
-
-    /// <summary> Load scene while waiting for some codes to set up before starting the scene. </summary>
+    /// <summary> 
+    /// Load scene. Go to the main menu except if its the first time calling it, for testing purposes. 
+    /// </summary>
     private static IEnumerator RestartToMainmenu()
     {
-        // Dont re-load the scene if we are just opening the game.
-        // it also helps to keep the game in the scene we are about to test in the editor.
+        // Dont re-load the scene if we are just opening the game. It also helps to keep the game in the scene we are about to test in the editor.
         if (firstGameLoadSinceExecution)
         {
             InputsManager.SetInputManager();
             firstGameLoadSinceExecution = false;
             if (instance.printTransitionStates)
-                print("Loading... Entering desired scene. (1/3)");
-            goto SettingScene;
+                print("Loading... Entering desired scene. (1/2)");
+            goto StartingScene;
         }
 
-        // Load desired scene
+        // Load main menu scene
         if (instance.printTransitionStates)
-            print("Loading... Entering desired scene. (1/3)");
+            print("Loading... Entering main menu. (1/2)");
         AsyncOperation loadingOperation = SceneManager.LoadSceneAsync(0);
         while (!loadingOperation.isDone)
             yield return null;
 
-        // Set the scene
-        SettingScene:
-        if (instance.printTransitionStates)
-            print("Loading... Setting scene. (2/3)");
-        loadingState = LoadingStates.settingScene;
-        //yield return new WaitForSecondsRealtime(0.1f); // give time to the other codes to perform the starting functions
-
         // Start the scene
+        StartingScene:
         OnStartingScene?.Invoke();
-        loadingState = LoadingStates.none;
         if (instance.printTransitionStates)
-            print("Loading completed. Scene started! (3/3)");
+            print("Loading completed. Scene started! (2/2)");
+
         // Start the game if there is only one scene, because normally it would begin with a main menu button.
         if (SceneManager.sceneCountInBuildSettings < 2)
-            OnLevelStartingSet?.Invoke();
+            OnLevelSetUp?.Invoke();
     }
-
-    #endregion
-
-    #region Level set
-
+    /// <summary>
+    /// Set data needed for playing a specific scene and then play the level start delegate
+    /// </summary>
     private static void SetLevel()
     {
         playing = true;
         difficulty = Difficulties.veryEasy;
-        OnLevelStarted?.Invoke();
+        OnLevelStart?.Invoke();
         Pause(false, false);
     }
 
@@ -144,27 +142,15 @@ public class GameManager : MonoBehaviour
         playing = !pausing;
 
         if (pausing)
-        {
-            OnPausing?.Invoke();
             Time.timeScale = 0;
-        }
         else
-        {
-            OnUnpausing?.Invoke();
             Time.timeScale = 1;
-        }
 
+        OnPausing?.Invoke(pausing);
         if (withPanelChanging)
-        {
-            if (pausing)
-                OnPausingMenu?.Invoke();
-            else
-                OnUnpausingMenu?.Invoke();
-        }
+            OnPausingMenu?.Invoke(pausing);
     }
-
     public static void Pause(bool withPanelChanging) => Pause(withPanelChanging, !paused);
-
     private static void LoseGame()
     {
         playing = false;

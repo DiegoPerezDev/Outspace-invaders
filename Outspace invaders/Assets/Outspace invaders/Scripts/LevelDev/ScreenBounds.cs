@@ -17,9 +17,4 @@ public class ScreenBounds : MonoBehaviour
         levelWidth = Mathf.Abs(leftScreenBound) + Mathf.Abs(rightLevelBound);
     }
 
-    void Start()
-    {
-        
-    }
-
 }

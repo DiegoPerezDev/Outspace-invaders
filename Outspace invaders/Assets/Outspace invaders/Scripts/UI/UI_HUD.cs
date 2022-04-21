@@ -5,8 +5,10 @@ using TMPro;
 
 public class UI_HUD : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI scoreTMP, highScoreTMP, livesTMP;
+    public TextMeshProUGUI scoreTMP;
+    [SerializeField] private TextMeshProUGUI highScoreTMP, livesTMP;
     private readonly string scoreMessage = "SCORE:\n", highScoreMessage = "HIGH SCORE:\n", livesMessage = "LIVES:\n";
+    private int playerLives;
     
     private void OnEnable()
     {
@@ -20,13 +22,10 @@ public class UI_HUD : MonoBehaviour
     }
     void Start()
     {
+        playerLives = Player.startLives - 1;
         scoreTMP.text = $"{scoreMessage}00";
         highScoreTMP.text = $"{highScoreMessage}00";
-        livesTMP.text = $"{livesMessage}{Player.startLives - 1}";
-    }
-    void Update()
-    {
-        
+        livesTMP.text = $"{livesMessage}{playerLives}";
     }
 
     private void AddScore()
@@ -36,8 +35,8 @@ public class UI_HUD : MonoBehaviour
     }
     private void SubstractLive()
     {
-        Player.lives--;
-        if(Player.lives >= 0)
+        playerLives--;
+        if(playerLives >= 0)
             livesTMP.text = $"{livesMessage}{Player.lives - 1}";
     }
 

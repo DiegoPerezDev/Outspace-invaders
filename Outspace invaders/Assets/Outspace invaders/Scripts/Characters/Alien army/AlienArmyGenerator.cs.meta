@@ -3,7 +3,10 @@ guid: 1a7b7ce68c1a46f46bbaee7a000e5a05
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - alienPrefab: {fileID: 7313115160187034934, guid: 22f4dea6721a53f489c58fdbebeace65, type: 3}
+  - currentCamera: {instanceID: 0}
+  - HUD_Panel: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

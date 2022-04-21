@@ -19,7 +19,7 @@ public class UI_Buttons : MonoBehaviour
             case "play":
                 AudioManager.PlayAudio(AudioManager.UI_AudioSource, ButtonAudioClip);
                 AudioManager.StopLevelSong();
-                GameManager.OnLevelStartingSet?.Invoke();
+                GameManager.OnLevelSetUp?.Invoke();
                 break;
 
             case "continueplaying":
@@ -29,10 +29,6 @@ public class UI_Buttons : MonoBehaviour
 
             case "mainmenu":
                 GameManager.RestartGame();
-                break;
-
-            case "restart":
-
                 break;
 
             default:

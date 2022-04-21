@@ -1,55 +1,63 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class Player : MonoBehaviour
 {
-    public static int highScore, score, lives;
+    public delegate void PlayerAchieventsDelegate();
+    public static PlayerAchieventsDelegate OnLosingLive;
+    public static int score, lives;
     public static readonly int scoreForKill = 20;
     public static readonly int startLives = 3;
+    [HideInInspector] public TextMeshProUGUI scoreTMP;
     [HideInInspector] public bool movingRight, movingLeft, shootAttempt, canShoot = true;
     [Range(5f, 15f)]  public float bulletVel = 6f;
-    [Range(0.1f, 1f)] [SerializeField] private float movementSpeed = 0.3f;
-    [Range(0f, 0.5f)]   [SerializeField] private float delayAfterBulletDestroyed = 0.2f;
-    [SerializeField] private GameObject bulletPref;
+    [Range(0.1f, 1f)] 
+    [SerializeField]  private float movementSpeed = 0.3f;
+    [Range(0f, 0.5f)]   
+    [SerializeField]  private float delayAfterBulletDestroyed = 0.2f;
+    [SerializeField]  private GameObject bulletPref;
     private Rigidbody2D rigidBody;
     private Vector2 playerSize, startPosition;
-    
-    public delegate void PlayerAchieventsDelegate();
-    public static PlayerAchieventsDelegate OnLosingLive, OnDying;
 
-
-    void OnEnable()
-    {
-        OnLosingLive += RestartPlayer;
-        OnDying += Death;
-    }
-    void OnDisable()
-    {
-        OnLosingLive -= RestartPlayer;
-        OnDying -= Death;
-    }
+    // - - - - MonoBehaviour Methods - - - -
+    void OnEnable() => OnLosingLive += CheckLosingLifeBehaviour;
+    void OnDisable() => OnLosingLive -= CheckLosingLifeBehaviour;
+    void OnDestroy() => StopAllCoroutines();
     void Start()
     {
+        // Get components
         rigidBody = GetComponent<Rigidbody2D>();
         playerSize = GetComponent<SpriteRenderer>().size;
-        canShoot = true;
+
+        // Set start variable values
+        var ui = GameObject.Find("UI");
+        foreach (Transform child in ui.GetComponentsInChildren<Transform>())
+        {
+            var hudCode = child.GetComponent<UI_HUD>();
+            if(hudCode != null)
+            {
+                scoreTMP = hudCode.scoreTMP;
+                break;
+            }
+        }
         var levelCenter = (ScreenBounds.levelWidth / 2) + ScreenBounds.leftScreenBound;
         startPosition = new Vector2(levelCenter, rigidBody.position.y);
         rigidBody.position = startPosition;
         lives = startLives;
     }
-    void Update() => Shoot();
-    void FixedUpdate() => Move();
-    void OnCollisionEnter2D(Collision2D collision)
+    void Update()
     {
-        if(lives > 0)
+        if (shootAttempt)
         {
-            if (collision.gameObject.CompareTag("Enemy"))
-                Death();
+            shootAttempt = false;
+            Shoot();
         }
     }
+    void FixedUpdate() => Move();
 
+    // - - - - Own Class Functions - - - -
     private void Move()
     {
         if (movingRight)
@@ -67,44 +75,37 @@ public class Player : MonoBehaviour
     }
     private void Shoot()
     {
-        if(shootAttempt)
+        if (canShoot)
         {
-            shootAttempt = false;
-            if (canShoot)
-            {
-                canShoot = false;
-                var holi = rigidBody.position + new Vector2(0f, (playerSize.y / 2) + (bulletPref.GetComponent<SpriteRenderer>().size.y / 2)) ;
-                var bullet = Instantiate(bulletPref, holi, Quaternion.identity);
-                bullet.GetComponent<PlayerBullet>().playerThatShootThis = this;
-            }
+            canShoot = false;
+            var originPos = rigidBody.position + new Vector2(0f, (playerSize.y / 2) + (bulletPref.GetComponent<SpriteRenderer>().size.y / 2)) ;
+            var bullet = Instantiate(bulletPref, originPos, Quaternion.identity);
+            bullet.GetComponent<PlayerBullet>().playerThatShootThis = this;
         }
     }
     public IEnumerator DelayBeforeShootingAgain()
     {
-        // Delay
         var timer = 0f;
         while(timer < delayAfterBulletDestroyed)
         {
             yield return null;
             timer += Time.deltaTime;
         }
-
-        // Can shoot again
         canShoot = true;
     }
     private void RestartPlayer()
     {
         rigidBody.velocity = Vector2.zero;
         rigidBody.position = startPosition;
+        canShoot = true;
     }
-    private void Death()
+    private void CheckLosingLifeBehaviour()
     {
-        if (lives != 0)
-        {
-            print("Player dead");
-            lives = 0;
+        lives--;
+        if (lives > 0)
+            RestartPlayer();
+        else if (lives >= 0)
             GameManager.RestartGame();
-        }
     }
 
 }

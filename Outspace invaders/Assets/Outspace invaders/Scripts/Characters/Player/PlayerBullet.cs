@@ -31,6 +31,11 @@ public class PlayerBullet : MonoBehaviour
         }
         else if (colidedObject == "EnemyAttack")
             Destroy(collision.gameObject);
+        else if(colidedObject == "RandomEnemy")
+        {
+            Destroy(collision.gameObject);
+            RandomAlien.OnRandomAlienDestroyed?.Invoke();
+        }
     }
 
     private void AddSpeed() => GetComponent<Rigidbody2D>().velocity = new Vector2(0f, playerThatShootThis.bulletVel);

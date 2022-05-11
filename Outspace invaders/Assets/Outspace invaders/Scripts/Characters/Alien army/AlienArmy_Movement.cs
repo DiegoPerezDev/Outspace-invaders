@@ -5,7 +5,7 @@ using UnityEngine;
 public class AlienArmy_Movement : MonoBehaviour
 {
     [SerializeField] private float rhythmDelay = 0.4f, xMoveDistance = 0.2f, yMoveDistance = 0.6f;
-    private float startRhythmDelay = 0.3f;
+    private float startRhythmDelay = 0.25f;
     private readonly float slowDownMaxDelay = 0.5f;
     private float slowDownDelay, previousArmySpeed, rhythmDelayDecrease;
     private bool movingRight = true;

@@ -107,11 +107,12 @@ public class AlienArmyGenerator : MonoBehaviour
     /// </summary>
     private void InstantiateAliensInOrder()
     {
-        // Evate creating aliens outside the screen
         var firstPos = new Vector2();
         firstPos.x = -((alienSize.x / 2) + (distanceBetweenAliens.x / 2)) * (armyColumns - 1);
         firstPos.y = ((alienSize.y / 2) + (distanceBetweenAliens.y / 2)) * (armyRows - 1);
-        if( (centerPos.x + firstPos.x - alienSize.x / 2 < leftScreenBound) || (centerPos.x - firstPos.x + alienSize.x/2 > rightLevelBound) )
+
+        // Evate creating aliens outside the screen
+        if ( (centerPos.x + firstPos.x - alienSize.x / 2 < leftScreenBound) || (centerPos.x - firstPos.x + alienSize.x/2 > rightLevelBound) )
         {
             if (armyColumns > 1) // evade endless iteration 
             {

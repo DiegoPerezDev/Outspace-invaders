@@ -16,8 +16,7 @@ public class GameManager : MonoBehaviour
     private static bool firstGameLoadSinceExecution = true;
     public delegate void LoadingDelegate();
     public static LoadingDelegate OnStartingScene;
-    public enum LoadingStates { none, loadingScene, settingScene }
-    public static LoadingStates loadingState;
+    private static IEnumerator loadingCorroutine;
 
     // Level management
     public static readonly float LoseToResetDelay = 0.7f;
@@ -62,7 +61,7 @@ public class GameManager : MonoBehaviour
     {
         // Load saved data and start the game
         LoadLevelData(); //Use 'ResetSavingData()' instead for restarting the saving data for testing purposes
-        RestartGame();
+        EnterScene();
     }
     /// <summary>
     /// Behaviour of the game when minimizing. In this case we open the pause menu.
@@ -81,18 +80,16 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Restart the whole game to the main menu.
     /// </summary>
-    public static void RestartGame()
+    public static void EnterScene(int sceneIndex)
     {
-        if (loadingState == LoadingStates.none)
-        {
-            loadingState = LoadingStates.loadingScene;
-            instance.StartCoroutine(RestartToMainmenu());
-        }
+        if (loadingCorroutine == null)
+            instance.StartCoroutine(loadingCorroutine = RestartToScene(sceneIndex));
     }
+    public static void EnterScene() => EnterScene(SceneManager.GetActiveScene().buildIndex);
     /// <summary> 
     /// Load scene. Go to the main menu except if its the first time calling it, for testing purposes. 
     /// </summary>
-    private static IEnumerator RestartToMainmenu()
+    private static IEnumerator RestartToScene(int sceneIndex)
     {
         // Dont re-load the scene if we are just opening the game. It also helps to keep the game in the scene we are about to test in the editor.
         if (firstGameLoadSinceExecution)
@@ -104,10 +101,10 @@ public class GameManager : MonoBehaviour
             goto StartingScene;
         }
 
-        // Load main menu scene
+        // Load scene
         if (instance.printTransitionStates)
             print("Loading... Entering main menu. (1/2)");
-        AsyncOperation loadingOperation = SceneManager.LoadSceneAsync(0);
+        AsyncOperation loadingOperation = SceneManager.LoadSceneAsync(sceneIndex);
         while (!loadingOperation.isDone)
             yield return null;
 
@@ -120,6 +117,8 @@ public class GameManager : MonoBehaviour
         // Start the game if there is only one scene, because normally it would begin with a main menu button.
         if (SceneManager.sceneCountInBuildSettings < 2)
             OnLevelSetUp?.Invoke();
+
+        loadingCorroutine = null;
     }
     /// <summary>
     /// Set data needed for playing a specific scene and then play the level start delegate
@@ -156,7 +155,7 @@ public class GameManager : MonoBehaviour
         playing = false;
         Pause(false, true);
         instance.StopAllCoroutines();
-        RestartGame();
+        EnterScene(0);
     }
 
     #endregion

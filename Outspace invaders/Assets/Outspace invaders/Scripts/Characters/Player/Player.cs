@@ -11,14 +11,12 @@ public class Player : MonoBehaviour
     public static readonly int scoreForKill = 20;
     public static readonly int startLives = 3;
     [HideInInspector] public TextMeshProUGUI scoreTMP;
+    [HideInInspector] public Rigidbody2D rigidBody;
     [HideInInspector] public bool movingRight, movingLeft, shootAttempt, canShoot = true;
     [Range(5f, 15f)]  public float bulletVel = 6f;
-    [Range(0.1f, 1f)] 
-    [SerializeField]  private float movementSpeed = 0.3f;
-    [Range(0f, 0.5f)]   
-    [SerializeField]  private float delayAfterBulletDestroyed = 0.2f;
+    [Range(0.1f, 1f)] [SerializeField]  private float movementSpeed = 0.3f;
+    [Range(0f, 0.5f)] [SerializeField]  private float delayAfterBulletDestroyed = 0.2f;
     [SerializeField]  private GameObject bulletPref;
-    private Rigidbody2D rigidBody;
     private Vector2 playerSize, startPosition;
 
     // - - - - MonoBehaviour Methods - - - -
@@ -105,7 +103,7 @@ public class Player : MonoBehaviour
         if (lives > 0)
             RestartPlayer();
         else if (lives >= 0)
-            GameManager.RestartGame();
+            GameManager.EnterScene();
     }
 
 }

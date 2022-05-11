@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Outspace invaders/Scenes/TestLevel.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
+    path: Assets/Outspace invaders/Scenes/MainMenu.unity
+    guid: 8a1ec99fc6da24942aefab776f28b076
+  - enabled: 1
+    path: Assets/Outspace invaders/Scenes/Level.unity
+    guid: edc9cb5eda130c94d87d2a3d2bc8cc3a
   m_configObjects: {}

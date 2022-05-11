@@ -4,12 +4,18 @@ using UnityEngine;
 
 public class AliensBullet : MonoBehaviour
 {
-    [SerializeField] private float bulletVel = 6f;
+    private float bulletVel = 6f;
 
     void Start() => AddSpeed();
     void OnTriggerEnter2D(Collider2D collision)
     {
-        // Every time the bullet collide anything, destroy the bullet and tell the alien attack script that it can now attack again
+        var collidedObjectTag = collision.gameObject.tag;
+
+        // Dont collide with enemies or other bullets
+        if (collidedObjectTag == "Enemy")
+            return;
+
+        // Collide with anything
         if (gameObject)
             Destroy(gameObject);
         AlienArmy_AttackBehaviour.shooting = false;

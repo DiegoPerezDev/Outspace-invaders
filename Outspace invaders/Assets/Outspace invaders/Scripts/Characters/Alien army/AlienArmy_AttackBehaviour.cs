@@ -17,7 +17,7 @@ public class AlienArmy_AttackBehaviour : MonoBehaviour
     void OnDisable() => AlienArmy.OnArmyStart -= StartShooting;
     void OnDestroy()
     {
-        StopAllCoroutines();    
+        StopAllCoroutines();
     }
 
     /// <summary>
@@ -111,6 +111,11 @@ public class AlienArmy_AttackBehaviour : MonoBehaviour
             var currentColumns = AlienArmy.aliensByColumns.Count;
             for (int i = 0; i < currentColumns; i++)
             {
+                if (AlienArmy.aliensByColumns[i][0] == null)
+                {
+                    print("alien not found here");
+                    return null;
+                }
                 var alienPosX = AlienArmy.aliensByColumns[i][0].rigidBody.position.x;
                 var distanceAlienPlayer = Mathf.Abs(alienPosX - playerPosX);
                 var closeDistance = (AlienArmy.distanceBetweenAliens.x + AlienArmy.alienSize.x) / 2;
@@ -144,7 +149,6 @@ public class AlienArmy_AttackBehaviour : MonoBehaviour
                 }
             }
             print("This should never happen");
-            Debug.Break();
         }
         else // Select a random column to shoot
         {
@@ -152,11 +156,12 @@ public class AlienArmy_AttackBehaviour : MonoBehaviour
             columnIndex = UnityEngine.Random.Range(0, AlienArmy.aliensByColumns.Count);
         }
 
-        // Select the row of the alien, select all of the row positions randomly
-        SelectRow:
+    // Select one alien of a selected row randomly, one of those aliens not destroyed
+    SelectRow:
         var rowAmount = AlienArmy.aliensByColumns[columnIndex].Count;
-        List<int> possibleAliensToSelect = Enumerable.Range(0, rowAmount).ToList();
         List<int> randomRowOrder = new List<int>();
+        // - set list of aliens with random row order to check another one if the previous has been destroyed
+        List<int> possibleAliensToSelect = Enumerable.Range(0, rowAmount).ToList();
         for (int i = 0; i < rowAmount; i++)
         {
             int index = UnityEngine.Random.Range(0, possibleAliensToSelect.Count);
@@ -169,7 +174,7 @@ public class AlienArmy_AttackBehaviour : MonoBehaviour
             if (alienFromSelectedRow != null)
                 return alienFromSelectedRow.gameObject;
         }
-        print("This should never happen 2");
+        print("This should never happen");
         return null;
     }
 

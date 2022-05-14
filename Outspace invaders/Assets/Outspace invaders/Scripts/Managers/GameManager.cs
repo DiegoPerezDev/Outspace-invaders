@@ -84,6 +84,8 @@ public class GameManager : MonoBehaviour
     {
         if (loadingCorroutine == null)
             instance.StartCoroutine(loadingCorroutine = RestartToScene(sceneIndex));
+        else
+            print("trying to enter a scene but already loading one");
     }
     public static void EnterScene() => EnterScene(SceneManager.GetActiveScene().buildIndex);
     /// <summary> 
@@ -97,13 +99,13 @@ public class GameManager : MonoBehaviour
             InputsManager.SetInputManager();
             firstGameLoadSinceExecution = false;
             if (instance.printTransitionStates)
-                print("Loading... Entering desired scene. (1/2)");
+                print("Loading scene... Entering desired scene. (1/2)");
             goto StartingScene;
         }
 
         // Load scene
         if (instance.printTransitionStates)
-            print("Loading... Entering main menu. (1/2)");
+            print("Loading scene... Entering desired scene. (1/2)");
         AsyncOperation loadingOperation = SceneManager.LoadSceneAsync(sceneIndex);
         while (!loadingOperation.isDone)
             yield return null;

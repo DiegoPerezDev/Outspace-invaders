@@ -193,8 +193,11 @@ public class AlienArmy_Movement : MonoBehaviour
             for (int i = 0; i < AlienArmy.aliensByColumns[AlienArmy.aliensByColumns.Count - 1].Count; i++)
             {
                 var alienAnalized = AlienArmy.aliensByColumns[AlienArmy.aliensByColumns.Count - 1][i];
-                if (alienAnalized.isAlive)
-                    return (alienAnalized.rigidBody.position.x + AlienArmy.alienSize.x + AlienArmy.distanceBetweenAliens.x >= ScreenBounds.rightLevelBound);
+                if (alienAnalized)
+                {
+                    if (alienAnalized.isAlive)
+                        return (alienAnalized.rigidBody.position.x + AlienArmy.alienSize.x + AlienArmy.distanceBetweenAliens.x >= ScreenBounds.rightLevelBound);
+                }
             }
         }
         else
@@ -202,8 +205,11 @@ public class AlienArmy_Movement : MonoBehaviour
             for (int i = 0; i < AlienArmy.aliensByColumns[0].Count; i++)
             {
                 var alienAnalized = AlienArmy.aliensByColumns[0][i];
-                if (alienAnalized.isAlive)
-                    return (alienAnalized.rigidBody.position.x - AlienArmy.alienSize.x - AlienArmy.distanceBetweenAliens.x <= ScreenBounds.leftScreenBound);
+                if (alienAnalized)
+                {
+                    if (alienAnalized.isAlive)
+                        return (alienAnalized.rigidBody.position.x - AlienArmy.alienSize.x - AlienArmy.distanceBetweenAliens.x <= ScreenBounds.leftScreenBound);
+                }
             }
         }
         return false;

@@ -29,6 +29,7 @@ public class UI_MainMenu_Management : UI_MenuManagement
         switch (buttonName)
         {
             case "play":
+                print("play button");
                 AudioManager.PlayAudio(AudioManager.UI_AudioSource, buttonAudioClip);
                 AudioManager.StopLevelSong();
                 //GameManager.OnLevelSetUp?.Invoke();

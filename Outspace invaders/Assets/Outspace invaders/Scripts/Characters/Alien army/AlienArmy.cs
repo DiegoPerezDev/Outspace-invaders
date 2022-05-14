@@ -12,7 +12,7 @@ public class AlienArmy : MonoBehaviour
     public static AlienBehaviour OnArmyStart, OnAlienDestroyed;
     public static Vector2 alienSize, distanceBetweenAliens;
     public static int totalAmount, currentAmount;
-    public static int armyRowsAtStart, armyColumnsAtStart;
+    public static int armyRowsAtStart = 5, armyColumnsAtStart = 10;
     public static List<GameObject> aliens = new List<GameObject>();
     public static List<List<Alien>> aliensByRows = new List<List<Alien>>();
     public static List<List<Alien>> aliensByColumns = new List<List<Alien>>();
@@ -30,25 +30,31 @@ public class AlienArmy : MonoBehaviour
     void Start()
     {
         print("order this code");
+        aliens = new List<GameObject>();
+        aliensByRows = new List<List<Alien>>();
+        aliensByColumns = new List<List<Alien>>();
+        StartCoroutine(SetAlienArmy());
+    }
+
+    private IEnumerator SetAlienArmy()
+    {
         if (GetComponent<AlienArmyGenerator>() == null) // Alien generator script should only be on a test scene
         {
             SetAlienArmyData();
             GenerateAlienArmy();
+            yield return null;
         }
         else
             GetDataFromGeneratorCode();
         SetAliensData();
         OnArmyStart?.Invoke();
+        yield return null;
     }
-
     private void SetAlienArmyData()
     {
         // Get data needed for instancing
         alienSize = alienPrefab.GetComponent<SpriteRenderer>().size * alienPrefab.transform.lossyScale;
         distanceBetweenAliens = new Vector2(0.3f, 0.3f);
-        armyRowsAtStart = 5;
-        armyColumnsAtStart = 10;
-        alienSize = alienPrefab.GetComponent<SpriteRenderer>().size * alienPrefab.transform.lossyScale;
         var leftScreenBound = ScreenBounds.leftScreenBound;
         var rightLevelBound = ScreenBounds.rightLevelBound;
         var upScreenBound = ScreenBounds.upperScreenBound;
@@ -61,7 +67,7 @@ public class AlienArmy : MonoBehaviour
         if (distanceBetweenAliens.x < 0) distanceBetweenAliens.x = 0;
         if (distanceBetweenAliens.y < 0) distanceBetweenAliens.y = 0;
 
-        // - Limit the center position values
+        // Limit the center position values
         if ((centerPos.y + alienSize.y + distanceBetweenAliens.y / 2) > upScreenBound)
             centerPos.y = upScreenBound - alienSize.y - distanceBetweenAliens.y / 2;
         else if ((centerPos.y - alienSize.y - distanceBetweenAliens.y / 2) < -upScreenBound)
@@ -74,11 +80,9 @@ public class AlienArmy : MonoBehaviour
     private void GenerateAlienArmy()
     {
         // Destroy existing alien armys if there are any
-        foreach (Transform child in GetComponentsInChildren<Transform>())
-        {
-            if (child == transform) continue;
-            Destroy(child.gameObject);
-        }
+        Transform[] childs = GetComponentsInChildren<Transform>();
+        for (int i = 1; i < childs.Length; i++)
+            Destroy(childs[i].gameObject);
 
         // Instantiate the first alien, the one that tells us the position of the first row and the first column
         var firstPos = new Vector2();
@@ -155,7 +159,6 @@ public class AlienArmy : MonoBehaviour
             }
             aliensByRows.Add(currentRowOfAliens);
         }
-
         for (int x = 0; x < armyColumnsAtStart; x++)
         {
             var currentColumnOfAliens = new List<Alien>();
@@ -204,7 +207,6 @@ public class AlienArmy : MonoBehaviour
                     aliensByRows[i][j].position.y--;
             }
         }
-    //print($"Removing row #{alienToRemove.position.y}. Number of rows: {aliensByRows.Count}");
 
     Checkcolumns:
         // Check if there is any alien alive in the column, else remove the column from the list and adjust all columns position
@@ -222,7 +224,6 @@ public class AlienArmy : MonoBehaviour
                     aliensByColumns[i][j].position.x--;
             }
         }
-        //print($"Removing column #{alienToRemove.position.x}. Number of columns: {aliensByColumns.Count}");
     }
 
 }

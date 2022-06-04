@@ -11,7 +11,8 @@
                     "id": "eccbcff5-cff6-43af-b4f6-93b0bb04eb9a",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "left",
@@ -19,7 +20,8 @@
                     "id": "b701b53d-6b75-4bae-863f-cb4f502d51ba",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "shoot",
@@ -27,7 +29,17 @@
                     "id": "4de732bc-9449-4060-b9b6-d1cc07d78b5d",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "pause",
+                    "type": "Button",
+                    "id": "98bacb00-5ca2-4f52-9eb8-f7e51f47fccd",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -61,6 +73,45 @@
                     "processors": "",
                     "groups": "keyboard",
                     "action": "shoot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2c6dbbba-6733-4b3b-a9d2-67d2c895e840",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "keyboard",
+                    "action": "pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Menu Action Map",
+            "id": "81bcddf2-cfd2-4390-93e6-62cced712544",
+            "actions": [
+                {
+                    "name": "back",
+                    "type": "Button",
+                    "id": "fd8234cf-f7c2-47ce-a285-65eed4645d34",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "ac108fe9-a81e-43c3-aa6c-dcb3d88448b2",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "keyboard",
+                    "action": "back",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

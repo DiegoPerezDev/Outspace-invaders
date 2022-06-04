@@ -5,41 +5,43 @@ using TMPro;
 
 public class Player : MonoBehaviour
 {
-    public delegate void PlayerAchieventsDelegate();
-    public static PlayerAchieventsDelegate OnLosingLive;
-    public static int score, lives;
+    public delegate void PlayersDelegates();
+    public static PlayersDelegates OnLosingLive;
+    public static int score, lives, highScore;
     public static readonly int scoreForKill = 20;
     public static readonly int startLives = 3;
     [HideInInspector] public TextMeshProUGUI scoreTMP;
     [HideInInspector] public Rigidbody2D rigidBody;
     [HideInInspector] public bool movingRight, movingLeft, shootAttempt, canShoot = true;
-    [Range(5f, 15f)]  public float bulletVel = 6f;
-    [Range(0.1f, 1f)] [SerializeField]  private float movementSpeed = 0.3f;
-    [Range(0f, 0.5f)] [SerializeField]  private float delayAfterBulletDestroyed = 0.2f;
-    [SerializeField]  private GameObject bulletPref;
+    [Range(5f, 15f)] public float bulletVel = 6f;
+
+    [Range(0.1f, 1f)][SerializeField] private float movementSpeed = 0.3f;
+    [Range(0f, 0.5f)][SerializeField] private float delayAfterBulletDestroyed = 0.2f;
+    [SerializeField] private HUD hudCode;
+    [SerializeField]  private GameObject bulletPref, losePanel;
+    [SerializeField] private AlienArmy alienArmy;
     private Vector2 playerSize, startPosition;
+    public static readonly float restartDelay = 4f;
+    private Vector2 bulletSize;
 
     // - - - - MonoBehaviour Methods - - - -
-    void OnEnable() => OnLosingLive += CheckLosingLifeBehaviour;
+    void OnEnable()  => OnLosingLive += CheckLosingLifeBehaviour;
     void OnDisable() => OnLosingLive -= CheckLosingLifeBehaviour;
-    void OnDestroy() => StopAllCoroutines();
+    void OnDestroy() 
+    {
+        StopAllCoroutines();
+        score = 0;
+    }
     void Start()
     {
         // Get components
         rigidBody = GetComponent<Rigidbody2D>();
-        playerSize = GetComponent<SpriteRenderer>().size;
+        playerSize = GetComponent<SpriteRenderer>().size * transform.lossyScale;
+        bulletSize = bulletPref.GetComponent<SpriteRenderer>().size;
 
         // Set start variable values
-        var ui = GameObject.Find("UI");
-        foreach (Transform child in ui.GetComponentsInChildren<Transform>())
-        {
-            var hudCode = child.GetComponent<UI_HUD>();
-            if(hudCode != null)
-            {
-                scoreTMP = hudCode.scoreTMP;
-                break;
-            }
-        }
+        losePanel.SetActive(false);
+        scoreTMP = hudCode.scoreTMP;
         var levelCenter = (ScreenBounds.levelWidth / 2) + ScreenBounds.leftScreenBound;
         startPosition = new Vector2(levelCenter, rigidBody.position.y);
         rigidBody.position = startPosition;
@@ -76,7 +78,7 @@ public class Player : MonoBehaviour
         if (canShoot)
         {
             canShoot = false;
-            var originPos = rigidBody.position + new Vector2(0f, (playerSize.y / 2) + (bulletPref.GetComponent<SpriteRenderer>().size.y / 2)) ;
+            var originPos = rigidBody.position + new Vector2(0f, (playerSize.y / 2) + (bulletSize.y / 2)) ;
             var bullet = Instantiate(bulletPref, originPos, Quaternion.identity);
             bullet.GetComponent<PlayerBullet>().playerThatShootThis = this;
         }
@@ -91,19 +93,42 @@ public class Player : MonoBehaviour
         }
         canShoot = true;
     }
-    private void RestartPlayer()
+    private void RestartPlayerPhysics()
     {
         rigidBody.velocity = Vector2.zero;
         rigidBody.position = startPosition;
-        canShoot = true;
     }
     private void CheckLosingLifeBehaviour()
     {
         lives--;
         if (lives > 0)
-            RestartPlayer();
+            StartCoroutine(LosingLife());
         else if (lives >= 0)
-            GameManager.EnterScene();
+            GameManager.OnLoseGame?.Invoke();
     }
+    private IEnumerator LosingLife()
+    {
+        // Enabel losing panel for afordance
+        losePanel.SetActive(true);
 
+        LevelManager.LevelFreeze(true);
+
+        // Delay before restarting
+        var timer = 0f;
+        while(timer < restartDelay)
+        {
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        // Restart player
+        RestartPlayerPhysics();                     
+        canShoot = true;
+
+        // Disable losing panel for afordance
+        losePanel.SetActive(false);
+
+        LevelManager.LevelFreeze(true);
+    }
+    
 }

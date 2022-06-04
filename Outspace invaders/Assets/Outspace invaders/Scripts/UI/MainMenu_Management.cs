@@ -1,27 +1,43 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
-public class UI_MainMenu_Management : UI_MenuManagement
+public class MainMenu_Management : MenuManagement
 {
     [SerializeField] private GameObject quitMenu, mainMenu;
-    private AudioClip buttonAudioClip;
-    private readonly string buttonNotFoundMessage = "button attempt failed with the button of name: ";
+    [SerializeField] private TextMeshProUGUI highScoreTmp;
+    private readonly string highScoreMessage = "HIGH SCORE:";
 
+    // - - - - MONOBEHAVIOUR METHODS - - - -
     void Awake() => buttonAudioClip = Resources.Load<AudioClip>($"Audio/UI_SFX/button");
     void Start()
     {
-        if (mainMenu != null)
-            openedMenus.Add(mainMenu);
+        //openedMenus = new List<GameObject>();
+        openedMenus.Add(mainMenu);
+        openedMenus.Add(loadingScreen);
+    }
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        GameManager.OnSceneLoaded += StartMainMenu;
+    }
+    public override void OnDisable()
+    {
+        base.OnDisable();
+        GameManager.OnSceneLoaded -= StartMainMenu;
+    }   
+
+    // - - - - START FUNCTIONS - - - -
+    private void StartMainMenu()
+    {
+        // Hide loading panel
+        CloseMenu(false);
+        // Show score
+        highScoreTmp.text = $"{highScoreMessage} {Player.highScore}";
     }
 
     // - - - - - BUTTON FUNCTIONS - - - - -
-    private void FixButtonInputName(ref string buttonName)
-    {
-        buttonName = buttonName.ToLower();
-        buttonName = buttonName.Trim();
-        buttonName = buttonName.Replace(" ", "");
-    }
     public void MainPanelButtonsActions(string buttonName)
     {
         FixButtonInputName(ref buttonName);
@@ -29,10 +45,7 @@ public class UI_MainMenu_Management : UI_MenuManagement
         switch (buttonName)
         {
             case "play":
-                print("play button");
                 AudioManager.PlayAudio(AudioManager.UI_AudioSource, buttonAudioClip);
-                AudioManager.StopLevelSong();
-                //GameManager.OnLevelSetUp?.Invoke();
                 GameManager.EnterScene(1);
                 break;
 

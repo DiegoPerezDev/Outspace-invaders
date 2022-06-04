@@ -8,7 +8,10 @@ TagManager:
   - AlienArmy
   - Enemy
   - PlayerAttack
-  - EnemyAttack
+  - RandomEnemy
+  - DestroyableEnemyAttack
+  - InvulnerableEnemyAttack
+  - Barricade
   layers:
   - Default
   - TransparentFX

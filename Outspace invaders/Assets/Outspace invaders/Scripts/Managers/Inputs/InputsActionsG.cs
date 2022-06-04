@@ -53,6 +53,15 @@ public partial class @InputsActionsG : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""pause"",
+                    ""type"": ""Button"",
+                    ""id"": ""98bacb00-5ca2-4f52-9eb8-f7e51f47fccd"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -88,6 +97,45 @@ public partial class @InputsActionsG : IInputActionCollection2, IDisposable
                     ""action"": ""shoot"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2c6dbbba-6733-4b3b-a9d2-67d2c895e840"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""keyboard"",
+                    ""action"": ""pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""Menu Action Map"",
+            ""id"": ""81bcddf2-cfd2-4390-93e6-62cced712544"",
+            ""actions"": [
+                {
+                    ""name"": ""back"",
+                    ""type"": ""Button"",
+                    ""id"": ""fd8234cf-f7c2-47ce-a285-65eed4645d34"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""ac108fe9-a81e-43c3-aa6c-dcb3d88448b2"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""keyboard"",
+                    ""action"": ""back"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -110,6 +158,10 @@ public partial class @InputsActionsG : IInputActionCollection2, IDisposable
         m_PlayerActionMap_right = m_PlayerActionMap.FindAction("right", throwIfNotFound: true);
         m_PlayerActionMap_left = m_PlayerActionMap.FindAction("left", throwIfNotFound: true);
         m_PlayerActionMap_shoot = m_PlayerActionMap.FindAction("shoot", throwIfNotFound: true);
+        m_PlayerActionMap_pause = m_PlayerActionMap.FindAction("pause", throwIfNotFound: true);
+        // Menu Action Map
+        m_MenuActionMap = asset.FindActionMap("Menu Action Map", throwIfNotFound: true);
+        m_MenuActionMap_back = m_MenuActionMap.FindAction("back", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -172,6 +224,7 @@ public partial class @InputsActionsG : IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerActionMap_right;
     private readonly InputAction m_PlayerActionMap_left;
     private readonly InputAction m_PlayerActionMap_shoot;
+    private readonly InputAction m_PlayerActionMap_pause;
     public struct PlayerActionMapActions
     {
         private @InputsActionsG m_Wrapper;
@@ -179,6 +232,7 @@ public partial class @InputsActionsG : IInputActionCollection2, IDisposable
         public InputAction @right => m_Wrapper.m_PlayerActionMap_right;
         public InputAction @left => m_Wrapper.m_PlayerActionMap_left;
         public InputAction @shoot => m_Wrapper.m_PlayerActionMap_shoot;
+        public InputAction @pause => m_Wrapper.m_PlayerActionMap_pause;
         public InputActionMap Get() { return m_Wrapper.m_PlayerActionMap; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -197,6 +251,9 @@ public partial class @InputsActionsG : IInputActionCollection2, IDisposable
                 @shoot.started -= m_Wrapper.m_PlayerActionMapActionsCallbackInterface.OnShoot;
                 @shoot.performed -= m_Wrapper.m_PlayerActionMapActionsCallbackInterface.OnShoot;
                 @shoot.canceled -= m_Wrapper.m_PlayerActionMapActionsCallbackInterface.OnShoot;
+                @pause.started -= m_Wrapper.m_PlayerActionMapActionsCallbackInterface.OnPause;
+                @pause.performed -= m_Wrapper.m_PlayerActionMapActionsCallbackInterface.OnPause;
+                @pause.canceled -= m_Wrapper.m_PlayerActionMapActionsCallbackInterface.OnPause;
             }
             m_Wrapper.m_PlayerActionMapActionsCallbackInterface = instance;
             if (instance != null)
@@ -210,10 +267,46 @@ public partial class @InputsActionsG : IInputActionCollection2, IDisposable
                 @shoot.started += instance.OnShoot;
                 @shoot.performed += instance.OnShoot;
                 @shoot.canceled += instance.OnShoot;
+                @pause.started += instance.OnPause;
+                @pause.performed += instance.OnPause;
+                @pause.canceled += instance.OnPause;
             }
         }
     }
     public PlayerActionMapActions @PlayerActionMap => new PlayerActionMapActions(this);
+
+    // Menu Action Map
+    private readonly InputActionMap m_MenuActionMap;
+    private IMenuActionMapActions m_MenuActionMapActionsCallbackInterface;
+    private readonly InputAction m_MenuActionMap_back;
+    public struct MenuActionMapActions
+    {
+        private @InputsActionsG m_Wrapper;
+        public MenuActionMapActions(@InputsActionsG wrapper) { m_Wrapper = wrapper; }
+        public InputAction @back => m_Wrapper.m_MenuActionMap_back;
+        public InputActionMap Get() { return m_Wrapper.m_MenuActionMap; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(MenuActionMapActions set) { return set.Get(); }
+        public void SetCallbacks(IMenuActionMapActions instance)
+        {
+            if (m_Wrapper.m_MenuActionMapActionsCallbackInterface != null)
+            {
+                @back.started -= m_Wrapper.m_MenuActionMapActionsCallbackInterface.OnBack;
+                @back.performed -= m_Wrapper.m_MenuActionMapActionsCallbackInterface.OnBack;
+                @back.canceled -= m_Wrapper.m_MenuActionMapActionsCallbackInterface.OnBack;
+            }
+            m_Wrapper.m_MenuActionMapActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                @back.started += instance.OnBack;
+                @back.performed += instance.OnBack;
+                @back.canceled += instance.OnBack;
+            }
+        }
+    }
+    public MenuActionMapActions @MenuActionMap => new MenuActionMapActions(this);
     private int m_keyboardSchemeIndex = -1;
     public InputControlScheme keyboardScheme
     {
@@ -237,5 +330,10 @@ public partial class @InputsActionsG : IInputActionCollection2, IDisposable
         void OnRight(InputAction.CallbackContext context);
         void OnLeft(InputAction.CallbackContext context);
         void OnShoot(InputAction.CallbackContext context);
+        void OnPause(InputAction.CallbackContext context);
+    }
+    public interface IMenuActionMapActions
+    {
+        void OnBack(InputAction.CallbackContext context);
     }
 }

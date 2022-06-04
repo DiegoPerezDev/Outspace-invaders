@@ -8,26 +8,26 @@ using System;
 /// <para> This class manage all the audio playing in the game, for both music and sfx, for all scenes. </para>
 /// <para> All codes should use audio by using the methods of this class, not playing audio in their own. </para>
 /// </summary>
-public class AudioManager : MonoBehaviour
+public class AudioManager
 {
     public static AudioSource musicSource, UI_AudioSource;
     public static AudioSource[] GameAudioSource;
     private static AudioClip[] songsClips = new AudioClip[Enum.GetValues(typeof(Songs)).Length];
     public static AudioMixer musicMixer, generalSFX_Mixer, UI_SFX_Mixer;
     public static GameObject GameAudioGO;
-    public GameObject musicSourceGO, GameAudioSourceGO, UI_AudioSourceGO;
+    public static GameObject musicSourceGO, GameAudioSourceGO, UI_AudioSourceGO;
     public enum Songs { mainmenu, level }
 
 
-    private void OnEnable()
+    public static void Enable()
     {
-        GameManager.OnStartingScene += StartingScene;
+        GameManager.OnSceneLoaded += StartingScene;
         GameManager.OnLevelStart += LevelStart;
         GameManager.OnLoseGame += LoseLevel;
     }
-    private void OnDisable()
+    public static void Disable()
     {
-        GameManager.OnStartingScene -= StartingScene;
+        GameManager.OnSceneLoaded -= StartingScene;
         GameManager.OnLevelStart -= LevelStart;
         GameManager.OnLoseGame -= LoseLevel;
     }
@@ -35,7 +35,7 @@ public class AudioManager : MonoBehaviour
 
     #region Level settings functions
 
-    private void StartingScene()
+    private static void StartingScene()
     {
         // Find resources
         songsClips[(int)Songs.mainmenu] = Resources.Load<AudioClip>("Audio/Music/LoopMenu");
@@ -53,8 +53,8 @@ public class AudioManager : MonoBehaviour
         // play song
         PlayLevelSong(Songs.mainmenu);
     }
-    private void LevelStart() => PlayLevelSong(Songs.level);
-    private void LoseLevel() => StopLevelSong();
+    private static void LevelStart() => PlayLevelSong(Songs.level);
+    private static void LoseLevel() => StopLevelSong();
     
 
     #endregion
@@ -183,7 +183,7 @@ public class AudioManager : MonoBehaviour
     {
         if (source == null)
         {
-            print($"No audio source found with name {nameof(source)}");
+            Debug.Log($"No audio source found with name {nameof(source)}");
             return false;
         }
         else
@@ -194,7 +194,7 @@ public class AudioManager : MonoBehaviour
     {
         if (clip == null)
         {
-            print($"No audio clip found with name {nameof(clip)}");
+            Debug.Log($"No audio clip found with name {nameof(clip)}");
             return false;
         }
         else

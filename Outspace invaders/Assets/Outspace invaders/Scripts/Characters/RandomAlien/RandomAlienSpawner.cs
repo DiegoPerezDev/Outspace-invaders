@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class RandomAlienSpawner : MonoBehaviour
 {
-    public float movementSpeed = 10f;
-    [SerializeField] private float spawnDelay = 30, SpawnPosY = 4f;
+    public float movementSpeed = 3.5f;
+    [SerializeField] private float spawnDelay = 30f, SpawnPosY = 4f;
     [SerializeField] private GameObject randomAlienPrefab;
     private Vector2 size;
 
@@ -20,9 +20,9 @@ public class RandomAlienSpawner : MonoBehaviour
         // Get components
         size = randomAlienPrefab.GetComponent<SpriteRenderer>().bounds.size;
         // Spawn iteration
+        RandomAlien.movementSpeed = movementSpeed;
         StartCoroutine(RandomAlienShipSpawn());
     }
-
 
     private IEnumerator RandomAlienShipSpawn()
     {
@@ -35,16 +35,11 @@ public class RandomAlienSpawner : MonoBehaviour
         }
 
         // Spawn ship randomly in the left or the right of the screen and adds its movement
-        var spawnPosition = new Vector2(ScreenBounds.rightLevelBound + size.x / 2, SpawnPosY);
-        var moveRight = false;
+        var spawnPosition = new Vector2(ScreenBounds.rightLevelBound + size.x / 2 + 0.1f, SpawnPosY);
         if (Random.Range(1, 3) == 1)
-        {
-            spawnPosition = new Vector2(ScreenBounds.leftScreenBound - size.x / 2, SpawnPosY);
-            moveRight = true;
-        }
-        var randomAlienSpawned = Instantiate(randomAlienPrefab, spawnPosition, Quaternion.identity, transform.parent);
-        randomAlienSpawned.GetComponent<RandomAlien>().AddStartMovement(moveRight, movementSpeed);
-
+            spawnPosition = new Vector2(ScreenBounds.leftScreenBound - size.x / 2 - 0.1f, SpawnPosY);
+        Instantiate(randomAlienPrefab, spawnPosition, Quaternion.identity, transform.parent);
+        
         // Restart
         StartCoroutine(RandomAlienShipSpawn());
     }

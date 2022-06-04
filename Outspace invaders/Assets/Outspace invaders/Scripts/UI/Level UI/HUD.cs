@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class UI_HUD : MonoBehaviour
+public class HUD : MonoBehaviour
 {
     public TextMeshProUGUI scoreTMP;
     [SerializeField] private TextMeshProUGUI highScoreTMP, livesTMP;
     private readonly string scoreMessage = "SCORE:\n", highScoreMessage = "HIGH SCORE:\n", livesMessage = "LIVES:\n";
     private int playerLives;
-    private readonly int minRandomScorePoints = 50, maxRandomScorePoints = 500;
+    private readonly int minRandomScorePoints = 50, maxRandomScorePoints = 300;
+    private int randomScoreIntervalVariation;
     
     private void OnEnable()
     {
@@ -25,10 +26,11 @@ public class UI_HUD : MonoBehaviour
     }
     void Start()
     {
-        playerLives = Player.startLives - 1;
-        scoreTMP.text = $"{scoreMessage}00";
-        highScoreTMP.text = $"{highScoreMessage}00";
-        livesTMP.text = $"{livesMessage}{playerLives}";
+        randomScoreIntervalVariation = maxRandomScorePoints / minRandomScorePoints;
+        playerLives = Player.startLives;
+        scoreTMP.text = $"{scoreMessage}{Player.score}";
+        highScoreTMP.text = $"{highScoreMessage}{Player.highScore}";
+        livesTMP.text = $"{livesMessage}{playerLives - 1}";
     }
 
     private void AddScore()
@@ -38,10 +40,9 @@ public class UI_HUD : MonoBehaviour
     }
     private void AddRandomScore()
     {
-        // Random score is a number between 'min random score point' and 'max random score point', counting 'varietion' by 'variation'
-        var variation = 50;
-        var scoreToAdd = (Random.Range((minRandomScorePoints - variation) / variation, maxRandomScorePoints/ variation) + variation) * variation;
-        Player.score += scoreToAdd;
+        // Random score is a number between 'min random score point' and 'max random score point' and its internal numbers
+        var randomScoreToAdd = Map(Random.Range(1, randomScoreIntervalVariation), 1, randomScoreIntervalVariation, minRandomScorePoints, maxRandomScorePoints);
+        Player.score += randomScoreToAdd;
         scoreTMP.text = $"{scoreMessage}{Player.score}";
     }
     private void SubstractLive()
@@ -49,6 +50,10 @@ public class UI_HUD : MonoBehaviour
         playerLives--;
         if(playerLives >= 0)
             livesTMP.text = $"{livesMessage}{Player.lives - 1}";
+    }
+    private int Map(int x, int in_min, int in_max, int out_min, int out_max)
+    {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
 }

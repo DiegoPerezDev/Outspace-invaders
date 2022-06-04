@@ -6,28 +6,42 @@ public class RandomAlien : MonoBehaviour
 {
     public delegate void randomAlienBehaviour();
     public static randomAlienBehaviour OnRandomAlienDestroyed;
-    public bool havePassedThroughScreen;
+    public static RandomAlien instanceInScene;
+    private static bool moveRight;
+    public static float movementSpeed;
 
+    void Start()
+    {
+        instanceInScene = this;
+        moveRight = transform.position.x < Camera.main.transform.position.x;
+        EnableMovement(true);
+    }
     void OnBecameInvisible()
     {
-        if (!havePassedThroughScreen)
-            havePassedThroughScreen = true;
-        else
+        if (gameObject)
             Destroy(gameObject);
     }
 
     /// <summary>
     /// Make the alien move to the other side of the screen
     /// </summary>
-    public void AddStartMovement(bool moveRight, float movementSpeed)
+    public static void EnableMovement(bool enabling)
     {
-        Rigidbody2D rigidbody = gameObject.GetComponent<Rigidbody2D>();
+        if (!instanceInScene)
+            return;
+        Rigidbody2D rigidbody = instanceInScene.gameObject.GetComponent<Rigidbody2D>();
         if (rigidbody == null)
             return;
-        if (moveRight)
-            rigidbody.velocity = Vector2.right * movementSpeed;
+
+        if (enabling)
+        {
+            if (moveRight)
+                rigidbody.velocity = Vector2.right * movementSpeed;
+            else
+                rigidbody.velocity = Vector2.left * movementSpeed;
+        }
         else
-            rigidbody.velocity = Vector2.left * movementSpeed;
+            rigidbody.velocity = Vector2.zero;
     }
 
 }

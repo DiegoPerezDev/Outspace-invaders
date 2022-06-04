@@ -6,11 +6,13 @@ using System.Linq;
 public class AlienArmy_AttackBehaviour : MonoBehaviour
 {
     public static bool shooting;
-    private GameObject bulletPrefab;
+    public float bulletSpeed = 8f;
+    [SerializeField] private bool shootAtStart;
+    [SerializeField] private float shootMaxDelay = 2f, shootMinDelay = 0f;
     private float shootDelay = 4f;
-    private readonly float shootMaxDelay = 2f;
+    private GameObject destroyableBulletPrefab, invulnerableBulletPrefab;
     private Rigidbody2D playerRigidbody;
-
+    private IEnumerator shootingCor;
 
 
     void OnEnable() => AlienArmy.OnArmyStart += StartShooting;
@@ -18,6 +20,9 @@ public class AlienArmy_AttackBehaviour : MonoBehaviour
     void OnDestroy()
     {
         StopAllCoroutines();
+        if (shootingCor != null)
+            StopCoroutine(shootingCor);
+        shooting = false;
     }
 
     /// <summary>
@@ -29,17 +34,18 @@ public class AlienArmy_AttackBehaviour : MonoBehaviour
         playerRigidbody = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>().rigidBody;
 
         // Get bullet prefab
-        bulletPrefab = Resources.Load<GameObject>("Characters/Aliens/AlienBullet");
-        if (bulletPrefab == null)
+        destroyableBulletPrefab = Resources.Load<GameObject>("Characters/Aliens/DestroyableAlienBullet");
+        invulnerableBulletPrefab = Resources.Load<GameObject>("Characters/Aliens/InvulnerableAlienBullet");
+        if (destroyableBulletPrefab == null || invulnerableBulletPrefab == null)
         {
             print("Alien bullet prefab no found");
             return;
         }
 
-        // Start aliens constant shooting
-        if (shootDelay < 0.1f)
-            shootDelay = 0.1f;
-        StartCoroutine(RhythmicShooting());
+        if (!shootAtStart)
+            return;
+        shootingCor = RhythmicShooting();
+        StartCoroutine(shootingCor);
     }
 
     /// <summary>
@@ -53,9 +59,7 @@ public class AlienArmy_AttackBehaviour : MonoBehaviour
 
         // Dont shoot while there is still an alien bullet in the scene
         while (shooting)
-        {
             yield return null;
-        }
 
         // Random delay after shooting, delay is an integer or a .5 number
         var timer = 0f;
@@ -70,28 +74,48 @@ public class AlienArmy_AttackBehaviour : MonoBehaviour
         GameObject alienToShoot = SelectAlienToShoot();
         if (alienToShoot == null)
         {
-            StartCoroutine(RhythmicShooting());
+            RestartShootingCor();
             yield break;
         }
 
         // Shoot
         shooting = true;
-        Instantiate(bulletPrefab, alienToShoot.transform.position, Quaternion.identity);
+        var bulletPrefab = destroyableBulletPrefab;
+        if (Random.Range(1, 3) == 1) 
+            bulletPrefab = invulnerableBulletPrefab;
+        var bulletInstantiated = Instantiate(bulletPrefab, alienToShoot.transform.position, Quaternion.identity);
+        bulletInstantiated.GetComponent<AlienBullet>().alienArmy_AttackBehaviour = this;
 
         // Restart
-        StartCoroutine(RhythmicShooting());
+        RestartShootingCor();
     }
-
+    private void RestartShootingCor()
+    {
+        if(shootingCor != null)
+            StopCoroutine(shootingCor);
+        shootingCor = RhythmicShooting();
+        StartCoroutine(shootingCor);
+    }
+    public void EnableShooting(bool enable)
+    {
+        if (enable)
+            RestartShootingCor();
+        else if (shootingCor != null)
+        {
+            if (shootingCor != null)
+                StopCoroutine(shootingCor);
+        }
+    }
 
     /// <summary>
     /// Set the delay of the alien shooting depending on the amount of aliens left, faster with fewer aliens
     /// </summary>
     private void SetShootDelay()
     {
-        var randomDelay = UnityEngine.Random.Range(0f, shootMaxDelay);
+        var randomDelay = UnityEngine.Random.Range(shootMinDelay, shootMaxDelay);
         var currentAlienPercentaje = (float)AlienArmy.currentAmount / AlienArmy.totalAmount;
         var divisionForLessAliensInGame = Map(currentAlienPercentaje, 0f, 1f, 4f, 1f);
-        shootDelay = Map(randomDelay, 0f, shootMaxDelay, 0f, shootMaxDelay / divisionForLessAliensInGame);
+        shootDelay = Map(randomDelay, shootMinDelay, shootMaxDelay, 0f, shootMaxDelay / divisionForLessAliensInGame);
     }
 
     /// <summary>

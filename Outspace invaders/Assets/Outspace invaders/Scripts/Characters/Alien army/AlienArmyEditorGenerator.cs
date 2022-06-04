@@ -28,6 +28,8 @@ public class AlienArmyGenerator : MonoBehaviour
             instance = this;
         else
             Destroy(this);
+
+        // Check all 
     }
     /// <summary>
     /// Try to re-create the alien army every time that the user change any variable value through inspector, except in playmode.
@@ -44,7 +46,16 @@ public class AlienArmyGenerator : MonoBehaviour
     async void OnValidateRestart()
     {
         await Task.Delay(50);
-        RestartAlienArmy();
+        if(CheckComponentsNeeded())
+            RestartAlienArmy();
+        else
+            print("Didn't get all of the components needed for this code to work");
+    }
+    private bool CheckComponentsNeeded()
+    {
+        if (alienPrefab == null || HUD_Panel == null)
+            return false;
+        return true;
     }
     /// <summary>
     /// Create new army of aliens, destroying previus one to avoid multiple armys at the same time.

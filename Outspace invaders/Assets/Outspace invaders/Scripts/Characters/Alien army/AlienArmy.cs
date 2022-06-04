@@ -26,16 +26,30 @@ public class AlienArmy : MonoBehaviour
     private int armyRows = 5, armyColumns = 10;
 
 
-    void Awake() => instance = this;
+    void Awake()
+    {
+        instance = this;
+        if (!CheckComponentsNeeded())
+        {
+            print("Didn't get all of the components needed for this code to work");
+            Debug.Break();
+            Destroy(this);
+        }
+    }
     void Start()
     {
-        print("order this code");
         aliens = new List<GameObject>();
         aliensByRows = new List<List<Alien>>();
         aliensByColumns = new List<List<Alien>>();
         StartCoroutine(SetAlienArmy());
     }
 
+    private bool CheckComponentsNeeded()
+    {
+        if (alienPrefab == null || HUD_Panel == null)
+            return false;
+        return true;
+    }
     private IEnumerator SetAlienArmy()
     {
         if (GetComponent<AlienArmyGenerator>() == null) // Alien generator script should only be on a test scene
@@ -54,7 +68,7 @@ public class AlienArmy : MonoBehaviour
     {
         // Get data needed for instancing
         alienSize = alienPrefab.GetComponent<SpriteRenderer>().size * alienPrefab.transform.lossyScale;
-        distanceBetweenAliens = new Vector2(0.3f, 0.3f);
+        distanceBetweenAliens = new Vector2(0.7f, 0.3f);
         var leftScreenBound = ScreenBounds.leftScreenBound;
         var rightLevelBound = ScreenBounds.rightLevelBound;
         var upScreenBound = ScreenBounds.upperScreenBound;

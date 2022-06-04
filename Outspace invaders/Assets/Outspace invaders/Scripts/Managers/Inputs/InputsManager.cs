@@ -14,6 +14,8 @@ public sealed class InputsManager
 {
     public static InputsActionsG input;
     private static Player playerCode;
+    public delegate void InputsDelegates();
+    public static InputsDelegates MenuBackInput, pauseGameInput;
 
 #if UNITY_ANDROID
     private static Vector2 fingerPos = new Vector2();
@@ -31,7 +33,7 @@ public sealed class InputsManager
         SetInputMask();
         GameManager.OnLevelStart += LevelStart;
         GameManager.OnLoseGame += LoseLevel;
-        GameManager.OnPausing += EnablePlayerActionMaps;
+        GameManager.OnPausing += ChangePlayerActionMaps;
     }
     /// <summary>
     /// Set input mask, the one that tells the game which device we are using for inputs, xbox controller for example
@@ -52,12 +54,12 @@ public sealed class InputsManager
     /// <summary>
     /// Set the call backs of the input action maps, this mean that we tell what to do when performing the inputs.
     /// </summary>
-    private static void SetPlayerInputsCallbacks()
+    private static void SetInputsCallbacks()
     {
 #if UNITY_STANDALONE
-        //input.PlayingInputs.pause.performed += ctx => GameManager.Pause(true);
-        //input.MenuInputs.back.performed += ctx => UI_MenusManagement.CloseMenu();
+        input.MenuActionMap.back.performed += ctx => MenuBackInput?.Invoke();
 
+        input.PlayerActionMap.pause.performed += ctx => pauseGameInput?.Invoke();
         input.PlayerActionMap.right.started += ctx => playerCode.movingRight = true;
         input.PlayerActionMap.right.canceled += ctx => playerCode.movingRight = false;
         input.PlayerActionMap.left.started += ctx => playerCode.movingLeft = true;
@@ -68,12 +70,31 @@ public sealed class InputsManager
     /// <summary>
     /// Enable or disable the action maps that manages the player itself, not the menu
     /// </summary>
-    private static void EnablePlayerActionMaps(bool disabling)
+    private static void ChangePlayerActionMaps()
     {
-        if (disabling)
+        if (GameManager.inPause)
+        {
             input.PlayerActionMap.Disable();
+            input.MenuActionMap.Enable();
+        }
         else
+        {
+            input.MenuActionMap.Disable();
             input.PlayerActionMap.Enable();
+        }
+    }
+    public static void EnablePlayerActionMaps(bool enable)
+    {
+        if (!enable)
+        {
+            input.PlayerActionMap.Disable();
+            input.MenuActionMap.Enable();
+        }
+        else
+        {
+            input.MenuActionMap.Disable();
+            input.PlayerActionMap.Enable();
+        }
     }
 
     #endregion
@@ -96,18 +117,18 @@ public sealed class InputsManager
             if (playerCodeTemp != null)
             {
                 playerCode = playerCodeTemp;
-                SetPlayerInputsCallbacks();
+                SetInputsCallbacks();
             }
             else
                 Debug.Log("Couldn't find any 'Player' script attached to the player gameObject.");
         }
         else
-            Debug.Log("Couldn't find any gameObjects with tag 'Player'.");
+            Debug.Log("More than one gameObject with the tag 'Player'.");
     }
     /// <summary>
     /// Set the inputs for when the user loses the game. Usually just disable the players action maps.
     /// </summary>
-    private static void LoseLevel() => EnablePlayerActionMaps(false);
+    private static void LoseLevel() => ChangePlayerActionMaps();
 
     /*
     private static void CheckIfTapOnButton()

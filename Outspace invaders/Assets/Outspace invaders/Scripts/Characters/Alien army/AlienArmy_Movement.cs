@@ -4,13 +4,16 @@ using UnityEngine;
 
 public class AlienArmy_Movement : MonoBehaviour
 {
-    [SerializeField] private float rhythmDelay = 0.4f, xMoveDistance = 0.2f, yMoveDistance = 0.6f;
-    private float startRhythmDelay = 0.25f;
+    [Range(0.1f, 1f)] [SerializeField] private float startRhythmDelay = 0.5f;
+    [Range(0.005f, 0.02f)][SerializeField] private float rhythmDelayDecrease = 0.01f;
+    [SerializeField] private float xMoveDistance = 0.2f, yMoveDistance = 0.6f;
+    private float rhythmDelay;
     private readonly float slowDownMaxDelay = 0.5f;
-    private float slowDownDelay, previousArmySpeed, rhythmDelayDecrease;
+    private float slowDownDelay, previousArmySpeed;
     private bool movingRight = true;
     private int lastTwentyPercentAliens;
     private IEnumerator SlowMovementCor;
+    private int rowNumInTheMove;
 
 
     void OnEnable()
@@ -37,18 +40,16 @@ public class AlienArmy_Movement : MonoBehaviour
     {
         // Set rhythm of the movement, the delay between the movement of the rows of the aliens
         lastTwentyPercentAliens = (int)((AlienArmy.totalAmount * 0.2f) - 1f);
-        var maxNumOfFastenByAlienKill = (8f + lastTwentyPercentAliens); // Fasten by alien kill every 10% less of the total amount of aliens till theres only 20% left, also after every single kill of the last 20%.
-        rhythmDelayDecrease = startRhythmDelay / (maxNumOfFastenByAlienKill + 1);
-        if (rhythmDelayDecrease < Time.fixedDeltaTime * 1.1f)
-        {
-            rhythmDelayDecrease = Time.fixedDeltaTime * 1.1f;
-            startRhythmDelay = rhythmDelayDecrease * (maxNumOfFastenByAlienKill + 1);
-        }
+        var maxNumOfFastenByAlienKill = (8f + lastTwentyPercentAliens); // Fasten by alien kill every 10% less of the total amount of aliens till theres only 20% left, also after every single kill of the last 20%
+        if (rhythmDelayDecrease < (startRhythmDelay - 0.021f) / maxNumOfFastenByAlienKill)
+            rhythmDelayDecrease = (startRhythmDelay - 0.023f) / maxNumOfFastenByAlienKill;
         rhythmDelay = startRhythmDelay;
 
         // Start aliens constant movement
         movingRight = true;
-        StartCoroutine(RhythmicMovement());
+        SlowMovementCor = RhythmicMovement();
+        rowNumInTheMove = AlienArmy.aliensByRows.Count - 1;
+        StartCoroutine(SlowMovementCor);
     }
     /// <summary>
     /// Speed up the aliens ryhthm every time there is 10% less aliens, only if there are more than 20%. In case of less than 20% increase speed for each alien destroyed.
@@ -81,13 +82,20 @@ public class AlienArmy_Movement : MonoBehaviour
             print("No aliens found");
             yield break;
         }
-
+ 
         // Check Lateral screen bounds to know if the movement should be down or to the sides.
         bool moveDown = CheckLateralBounds();
 
         // Move aliens row by row depending on the direction
-        for (int y = AlienArmy.aliensByRows.Count - 1; y > -1; y--)
+        var alienMaxRows = AlienArmy.aliensByRows.Count - 1;
+        
+        for (int y = alienMaxRows; y > -1; y--)
         {
+            if (y <= rowNumInTheMove)
+                rowNumInTheMove--;
+            else
+                continue;
+
             var actualRow = AlienArmy.aliensByRows[y];
             for (int x = 0; x < AlienArmy.armyColumnsAtStart; x++)
             {
@@ -123,12 +131,32 @@ public class AlienArmy_Movement : MonoBehaviour
             }
         }
 
+        rowNumInTheMove = alienMaxRows;
+
         // Change the direction of the movement after moving down
         if (moveDown)
             movingRight = !movingRight;
 
         // Restart
-        StartCoroutine(RhythmicMovement());
+        RestartMovementCor();
+    }
+    private void RestartMovementCor()
+    {
+        if (SlowMovementCor != null)
+            StopCoroutine(SlowMovementCor);
+        SlowMovementCor = RhythmicMovement();
+        StartCoroutine(SlowMovementCor);
+    }
+
+    public void EnableMovement(bool enable)
+    {
+        if (enable)
+            RestartMovementCor();
+        else
+        {
+            if (SlowMovementCor != null)
+                StopCoroutine(SlowMovementCor);
+        }
     }
     /// <summary>
     /// Increase the speed of the army movement by reducing the rhythm delay
@@ -159,9 +187,8 @@ public class AlienArmy_Movement : MonoBehaviour
         {
             previousArmySpeed = rhythmDelay;
         }
-        
-        SlowMovementCor = TemporalSlowMovement();
-        StartCoroutine(SlowMovementCor);
+
+        RestartMovementCor();
     }
     private IEnumerator TemporalSlowMovement()
     {
@@ -196,7 +223,7 @@ public class AlienArmy_Movement : MonoBehaviour
                 if (alienAnalized)
                 {
                     if (alienAnalized.isAlive)
-                        return (alienAnalized.rigidBody.position.x + AlienArmy.alienSize.x + AlienArmy.distanceBetweenAliens.x >= ScreenBounds.rightLevelBound);
+                        return (alienAnalized.rigidBody.position.x + (AlienArmy.alienSize.x + AlienArmy.distanceBetweenAliens.x) / 2f >= ScreenBounds.rightLevelBound);
                 }
             }
         }
@@ -208,7 +235,7 @@ public class AlienArmy_Movement : MonoBehaviour
                 if (alienAnalized)
                 {
                     if (alienAnalized.isAlive)
-                        return (alienAnalized.rigidBody.position.x - AlienArmy.alienSize.x - AlienArmy.distanceBetweenAliens.x <= ScreenBounds.leftScreenBound);
+                        return (alienAnalized.rigidBody.position.x - (AlienArmy.alienSize.x + AlienArmy.distanceBetweenAliens.x) / 2f <= ScreenBounds.leftScreenBound);
                 }
             }
         }

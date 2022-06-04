@@ -15,36 +15,37 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool printTransitionStates;
     private static bool firstGameLoadSinceExecution = true;
     public delegate void LoadingDelegate();
-    public static LoadingDelegate OnStartingScene;
+    public static LoadingDelegate OnSceneLoaded;
     private static IEnumerator loadingCorroutine;
+    public static bool inLoadingScene = true;
+    public static bool inMenu;
 
     // Level management
     public static readonly float LoseToResetDelay = 0.7f;
-    public static bool playing, paused;
+    public static bool playing, inPause;
     public delegate void LevelDelegate();
-    public static LevelDelegate OnLevelSetUp, OnLevelStart, OnLoseGame;
-    public delegate void Pausing(bool pausing);
-    public static Pausing OnPausing, OnPausingMenu;
-
-    // Specific game data
-    [HideInInspector] public enum Difficulties { veryEasy, easy, normal, hard, veryHard }
-    public static Difficulties difficulty = Difficulties.veryEasy;
+    public static LevelDelegate OnLevelStart, OnLoseGame;
+    public delegate void Pausing();
+    public static Pausing OnPausing;
 
     // Saving data
     public delegate void SavingDataDelegate();
     public static SavingDataDelegate OnSaving, OnLoading;
-    private static readonly string scoreRecordValKey = "scoreRecordValKey";
 
 
     private void OnEnable()
     {
-        OnLevelSetUp += SetLevel;
+        OnLevelStart += SetLevel;
         OnLoseGame += LoseGame;
+        OnPausing += Pause;
+        AudioManager.Enable();
     }
     private void OnDisable()
     {
-        OnLevelSetUp -= SetLevel;
+        AudioManager.Disable();
+        OnLevelStart -= SetLevel;
         OnLoseGame -= LoseGame;
+        OnPausing -= Pause;
     }
     void Awake()
     {
@@ -60,7 +61,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         // Load saved data and start the game
-        LoadLevelData(); //Use 'ResetSavingData()' instead for restarting the saving data for testing purposes
+        LoadHighScore(); //Use 'ResetSavingData()' instead for restarting the saving data for testing purposes
         EnterScene();
     }
     /// <summary>
@@ -70,8 +71,8 @@ public class GameManager : MonoBehaviour
     {
         if (!pauseStatus || !playing)
             return;
-        if (!paused)
-            Pause(true, true);
+        if (!inPause)
+            OnPausing?.Invoke();
     }
 
 
@@ -83,7 +84,11 @@ public class GameManager : MonoBehaviour
     public static void EnterScene(int sceneIndex)
     {
         if (loadingCorroutine == null)
+        {
+            inLoadingScene = true;
+            AudioManager.StopLevelSong();
             instance.StartCoroutine(loadingCorroutine = RestartToScene(sceneIndex));
+        }
         else
             print("trying to enter a scene but already loading one");
     }
@@ -93,34 +98,46 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private static IEnumerator RestartToScene(int sceneIndex)
     {
+        float minDelay = 0.1f, timer = 0f;
+        //OnPausing?.Invoke();
+
         // Dont re-load the scene if we are just opening the game. It also helps to keep the game in the scene we are about to test in the editor.
         if (firstGameLoadSinceExecution)
         {
-            InputsManager.SetInputManager();
+            InputsManager.SetInputManager(); // Start the input system
             firstGameLoadSinceExecution = false;
             if (instance.printTransitionStates)
                 print("Loading scene... Entering desired scene. (1/2)");
-            goto StartingScene;
+            while (timer < minDelay)
+            {
+                yield return null;
+                timer += Time.deltaTime;
+            }
+            goto LoadedScene;
         }
 
         // Load scene
         if (instance.printTransitionStates)
             print("Loading scene... Entering desired scene. (1/2)");
         AsyncOperation loadingOperation = SceneManager.LoadSceneAsync(sceneIndex);
-        while (!loadingOperation.isDone)
+        timer = 0f;
+        while (!loadingOperation.isDone && (timer < minDelay))
+        {
             yield return null;
+            timer += Time.deltaTime;
+        }
 
         // Start the scene
-        StartingScene:
-        OnStartingScene?.Invoke();
+        LoadedScene:
+        OnSceneLoaded?.Invoke();
         if (instance.printTransitionStates)
             print("Loading completed. Scene started! (2/2)");
 
-        // Start the game if there is only one scene, because normally it would begin with a main menu button.
-        if (SceneManager.sceneCountInBuildSettings < 2)
-            OnLevelSetUp?.Invoke();
+        if(SceneManager.GetActiveScene().buildIndex > 0)
+            OnLevelStart?.Invoke();
 
         loadingCorroutine = null;
+        inLoadingScene = false;
     }
     /// <summary>
     /// Set data needed for playing a specific scene and then play the level start delegate
@@ -128,35 +145,29 @@ public class GameManager : MonoBehaviour
     private static void SetLevel()
     {
         playing = true;
-        difficulty = Difficulties.veryEasy;
-        OnLevelStart?.Invoke();
-        Pause(false, false);
+        
     }
 
     #endregion
 
     #region Level events: pause and lose
 
-    public static void Pause(bool withPanelChanging, bool pausing)
+    private static void Pause()
     {
-        paused = pausing;
-        playing = !pausing;
+        inPause = !inPause;
+        playing = !inPause;
 
-        if (pausing)
+        if (inPause)
             Time.timeScale = 0;
         else
             Time.timeScale = 1;
-
-        OnPausing?.Invoke(pausing);
-        if (withPanelChanging)
-            OnPausingMenu?.Invoke(pausing);
     }
-    public static void Pause(bool withPanelChanging) => Pause(withPanelChanging, !paused);
     private static void LoseGame()
     {
         playing = false;
-        Pause(false, true);
+        OnPausing?.Invoke();
         instance.StopAllCoroutines();
+        SaveHighScore();
         EnterScene(0);
     }
 
@@ -164,14 +175,17 @@ public class GameManager : MonoBehaviour
 
     #region Saving data
 
-    public static void SaveLevelData() => OnSaving?.Invoke();
-        // PlayerPrefs.SetInt(scoreRecordValKey, Score.record);
-    public static void LoadLevelData() => OnLoading?.Invoke(); 
-    //Score.record = PlayerPrefs.GetInt(scoreRecordValKey);
-    public static void ResetSavingData()
+    private static readonly string highScoreKey = "highscore";
+
+    public static void SaveHighScore()
     {
-        PlayerPrefs.SetInt(scoreRecordValKey, 0);
-        SaveLevelData();
+        if (Player.score > Player.highScore)
+            Player.highScore = Player.score;
+        PlayerPrefs.SetInt(highScoreKey, Player.highScore);
+    }
+    public static void LoadHighScore()
+    {
+        Player.highScore = PlayerPrefs.GetInt(highScoreKey);
     }
 
     #endregion

@@ -1,0 +1,11 @@
+GAME NAME: [NO NAME]
+GAME GENRE: Arcade 80's style nes shooter (‘space invaders’ like)
+VERSION: V0.1
+
+SUMMARY:
+First design with no art or audio. Only the main functionalities of the gameplay.
+Consists in the base mechanics of ‘space invaders’ (Taito, 1978), but with just one enemy type in the alien army and also just one player. 
+
+TECHNICAL SPECIFICATIONS:
+- This game only works for Windows OS in a 1366 * 768 resolution.
+- Move the player sideways with ‘A’ and ‘D’. navigate through the menu with ‘esc’ and with the mouse.

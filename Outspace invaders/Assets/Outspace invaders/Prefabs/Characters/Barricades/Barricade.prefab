@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5843338725396770141}
   - component: {fileID: 5843338725396770142}
   - component: {fileID: 593639313972082002}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 5843338725396770140}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.9, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726833120272}
@@ -122,7 +122,7 @@ GameObject:
   - component: {fileID: 5843338725439262039}
   - component: {fileID: 5843338725439262032}
   - component: {fileID: 1668047203071342645}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (3)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -138,7 +138,7 @@ Transform:
   m_GameObject: {fileID: 5843338725439262038}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.6, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726592131737}
@@ -233,7 +233,7 @@ GameObject:
   - component: {fileID: 5843338725455327834}
   - component: {fileID: 5843338725455327835}
   - component: {fileID: 2333944138848545420}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (1)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -249,7 +249,7 @@ Transform:
   m_GameObject: {fileID: 5843338725455327833}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.8, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726592131737}
@@ -344,7 +344,7 @@ GameObject:
   - component: {fileID: 5843338725516628100}
   - component: {fileID: 5843338725516628101}
   - component: {fileID: 1818693238375387249}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (8)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -360,7 +360,7 @@ Transform:
   m_GameObject: {fileID: 5843338725516628123}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.1, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726592131737}
@@ -455,7 +455,7 @@ GameObject:
   - component: {fileID: 5843338725581390539}
   - component: {fileID: 5843338725581390580}
   - component: {fileID: 5961770011231066959}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (5)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -471,7 +471,7 @@ Transform:
   m_GameObject: {fileID: 5843338725581390538}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.4, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726592131737}
@@ -566,7 +566,7 @@ GameObject:
   - component: {fileID: 5843338725614364171}
   - component: {fileID: 5843338725614364212}
   - component: {fileID: 6583128395430004384}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -582,7 +582,7 @@ Transform:
   m_GameObject: {fileID: 5843338725614364170}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.9, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726592131737}
@@ -677,7 +677,7 @@ GameObject:
   - component: {fileID: 5843338725783261484}
   - component: {fileID: 5843338725783261485}
   - component: {fileID: 16058984230203418}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (5)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -693,7 +693,7 @@ Transform:
   m_GameObject: {fileID: 5843338725783261475}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.4, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726833120272}
@@ -788,7 +788,7 @@ GameObject:
   - component: {fileID: 5843338725911257725}
   - component: {fileID: 5843338725911257726}
   - component: {fileID: 4231606151018681825}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (6)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -804,7 +804,7 @@ Transform:
   m_GameObject: {fileID: 5843338725911257724}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.3, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338727101757209}
@@ -933,7 +933,7 @@ GameObject:
   - component: {fileID: 5843338726034651021}
   - component: {fileID: 5843338726034651022}
   - component: {fileID: 6105362039211894998}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (7)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -949,7 +949,7 @@ Transform:
   m_GameObject: {fileID: 5843338726034651020}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.2, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726592131737}
@@ -1044,7 +1044,7 @@ GameObject:
   - component: {fileID: 5843338726120667014}
   - component: {fileID: 5843338726120667015}
   - component: {fileID: 578437736484623817}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (9)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -1060,7 +1060,7 @@ Transform:
   m_GameObject: {fileID: 5843338726120667013}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338727101757209}
@@ -1155,7 +1155,7 @@ GameObject:
   - component: {fileID: 5843338726127027926}
   - component: {fileID: 5843338726127027927}
   - component: {fileID: 639962629643769745}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (6)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -1171,7 +1171,7 @@ Transform:
   m_GameObject: {fileID: 5843338726127027925}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.3, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726833120272}
@@ -1266,7 +1266,7 @@ GameObject:
   - component: {fileID: 5843338726175436544}
   - component: {fileID: 5843338726175436545}
   - component: {fileID: 763013969442912592}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (4)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -1282,7 +1282,7 @@ Transform:
   m_GameObject: {fileID: 5843338726175436551}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.5, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338727101757209}
@@ -1377,7 +1377,7 @@ GameObject:
   - component: {fileID: 5843338726214112026}
   - component: {fileID: 5843338726214112027}
   - component: {fileID: 7784777423181969711}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (8)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -1393,7 +1393,7 @@ Transform:
   m_GameObject: {fileID: 5843338726214112025}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.1, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338727101757209}
@@ -1488,7 +1488,7 @@ GameObject:
   - component: {fileID: 5843338726329153038}
   - component: {fileID: 5843338726329153039}
   - component: {fileID: 684836272415905882}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (3)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -1504,7 +1504,7 @@ Transform:
   m_GameObject: {fileID: 5843338726329153037}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.6, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726833120272}
@@ -1599,7 +1599,7 @@ GameObject:
   - component: {fileID: 5843338726404094369}
   - component: {fileID: 5843338726404094370}
   - component: {fileID: 3561265686032785426}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (7)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -1615,7 +1615,7 @@ Transform:
   m_GameObject: {fileID: 5843338726404094368}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.2, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726833120272}
@@ -1710,7 +1710,7 @@ GameObject:
   - component: {fileID: 5843338726408329439}
   - component: {fileID: 5843338726408329432}
   - component: {fileID: 8725303162485212542}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (6)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -1726,7 +1726,7 @@ Transform:
   m_GameObject: {fileID: 5843338726408329438}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.3, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726592131737}
@@ -1821,7 +1821,7 @@ GameObject:
   - component: {fileID: 5843338726581192624}
   - component: {fileID: 5843338726581192625}
   - component: {fileID: 4929545011948897273}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (3)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -1837,7 +1837,7 @@ Transform:
   m_GameObject: {fileID: 5843338726581192631}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.6, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338727101757209}
@@ -1945,7 +1945,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5843338726592131736}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0, z: 0}
+  m_LocalPosition: {x: 0.45, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1973,7 +1973,7 @@ GameObject:
   - component: {fileID: 5843338726613953124}
   - component: {fileID: 5843338726613953125}
   - component: {fileID: 8575949879919113965}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (2)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -1989,7 +1989,7 @@ Transform:
   m_GameObject: {fileID: 5843338726613953147}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.7, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726833120272}
@@ -2084,7 +2084,7 @@ GameObject:
   - component: {fileID: 5843338726635499685}
   - component: {fileID: 5843338726635499686}
   - component: {fileID: 7997616639481309339}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (2)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -2100,7 +2100,7 @@ Transform:
   m_GameObject: {fileID: 5843338726635499684}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.7, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338727101757209}
@@ -2208,7 +2208,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5843338726833120279}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.5, y: 0, z: 0}
+  m_LocalPosition: {x: -0.45, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2236,7 +2236,7 @@ GameObject:
   - component: {fileID: 5843338726846613187}
   - component: {fileID: 5843338726846613196}
   - component: {fileID: 8244696464267025918}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (4)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -2252,7 +2252,7 @@ Transform:
   m_GameObject: {fileID: 5843338726846613186}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.5, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726833120272}
@@ -2347,7 +2347,7 @@ GameObject:
   - component: {fileID: 5843338726863726166}
   - component: {fileID: 5843338726863726167}
   - component: {fileID: 7130573967932829038}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (8)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -2363,7 +2363,7 @@ Transform:
   m_GameObject: {fileID: 5843338726863726165}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.1, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726833120272}
@@ -2458,7 +2458,7 @@ GameObject:
   - component: {fileID: 5843338726866089865}
   - component: {fileID: 5843338726866089866}
   - component: {fileID: 1238921423741422892}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (5)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -2474,7 +2474,7 @@ Transform:
   m_GameObject: {fileID: 5843338726866089864}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.4, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338727101757209}
@@ -2569,7 +2569,7 @@ GameObject:
   - component: {fileID: 5843338727077074463}
   - component: {fileID: 5843338727077074456}
   - component: {fileID: 7795408259719742413}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (1)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -2585,7 +2585,7 @@ Transform:
   m_GameObject: {fileID: 5843338727077074462}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.8, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338727101757209}
@@ -2680,7 +2680,7 @@ GameObject:
   - component: {fileID: 5843338727101128161}
   - component: {fileID: 5843338727101128162}
   - component: {fileID: 4879246961250167830}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (9)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -2696,7 +2696,7 @@ Transform:
   m_GameObject: {fileID: 5843338727101128160}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726833120272}
@@ -2832,7 +2832,7 @@ GameObject:
   - component: {fileID: 5843338727152363811}
   - component: {fileID: 5843338727152363820}
   - component: {fileID: 8142539790764293685}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (4)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -2848,7 +2848,7 @@ Transform:
   m_GameObject: {fileID: 5843338727152363810}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.5, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726592131737}
@@ -2943,7 +2943,7 @@ GameObject:
   - component: {fileID: 5843338727213777605}
   - component: {fileID: 5843338727213777606}
   - component: {fileID: 5313320996722021053}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (7)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -2959,7 +2959,7 @@ Transform:
   m_GameObject: {fileID: 5843338727213777604}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.2, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338727101757209}
@@ -3054,7 +3054,7 @@ GameObject:
   - component: {fileID: 5843338727268335156}
   - component: {fileID: 5843338727268335157}
   - component: {fileID: 2139316527861966236}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (2)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -3070,7 +3070,7 @@ Transform:
   m_GameObject: {fileID: 5843338727268335115}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.7, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726592131737}
@@ -3165,7 +3165,7 @@ GameObject:
   - component: {fileID: 5843338727270685202}
   - component: {fileID: 5843338727270685203}
   - component: {fileID: 5553082566017639485}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -3181,7 +3181,7 @@ Transform:
   m_GameObject: {fileID: 5843338727270685201}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.9, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338727101757209}
@@ -3276,7 +3276,7 @@ GameObject:
   - component: {fileID: 5843338727397719460}
   - component: {fileID: 5843338727397719461}
   - component: {fileID: 8196695036115589814}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (1)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -3292,7 +3292,7 @@ Transform:
   m_GameObject: {fileID: 5843338727397719483}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.8, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726833120272}
@@ -3387,7 +3387,7 @@ GameObject:
   - component: {fileID: 5843338727427439916}
   - component: {fileID: 5843338727427439917}
   - component: {fileID: 5488905491613885629}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (9)
   m_TagString: Barricade
   m_Icon: {fileID: 0}
@@ -3403,7 +3403,7 @@ Transform:
   m_GameObject: {fileID: 5843338727427439907}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.1, z: 1}
+  m_LocalScale: {x: 0.45, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5843338726592131737}

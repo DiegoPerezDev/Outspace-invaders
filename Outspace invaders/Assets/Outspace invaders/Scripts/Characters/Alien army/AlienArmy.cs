@@ -3,33 +3,35 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// <para> This class manages all of the general data of the alien army for their use in other scripts that the alien army may use.</para>
-/// <para>It also has methods and delegates for all actions that manages the general data of the aliens. Like when they get killed.</para>
+/// <para> This class manages all of the general data of the alien army.</para>
+/// <para> For the behaviour of the alien army there are other scripts attached in the same GameObject.</para>
+/// <para> This class also spawn the alien army if there is no 'AlienArmyGenerator' script in the same GameObject.</para>
 /// </summary>
 public class AlienArmy : MonoBehaviour
 {
     public delegate void AlienBehaviour();
     public static AlienBehaviour OnArmyStart, OnAlienDestroyed;
-    public static Vector2 alienSize, distanceBetweenAliens;
+    public static Vector2 alienSize, distanceBetweenAliens = new Vector2(0.7f, 0.3f);
     public static int totalAmount, currentAmount;
     public static int armyRowsAtStart = 5, armyColumnsAtStart = 10;
     public static List<GameObject> aliens = new List<GameObject>();
     public static List<List<Alien>> aliensByRows = new List<List<Alien>>();
     public static List<List<Alien>> aliensByColumns = new List<List<Alien>>();
+    public static int armyRows, armyColumns;
+    public static readonly float enemyDyingDelay = 0.2f;
 
+    private static AlienArmy instance;
+    [SerializeField] private int rows = 5, columns = 10;
     [SerializeField] private RectTransform HUD_Panel;
     [SerializeField] private float centerHeight;
-
     [SerializeField] private GameObject alienPrefab;
-    private static AlienArmy instance;
     private Vector2 centerPos;
-    private int armyRows = 5, armyColumns = 10;
 
-
+    // - - - - - Monobehaviour methods - - - - -
     void Awake()
     {
         instance = this;
-        if (!CheckComponentsNeeded())
+        if (alienPrefab == null || HUD_Panel == null)
         {
             print("Didn't get all of the components needed for this code to work");
             Debug.Break();
@@ -41,38 +43,77 @@ public class AlienArmy : MonoBehaviour
         aliens = new List<GameObject>();
         aliensByRows = new List<List<Alien>>();
         aliensByColumns = new List<List<Alien>>();
-        StartCoroutine(SetAlienArmy());
+        armyRowsAtStart = rows > 0? rows : armyRowsAtStart;
+        armyColumnsAtStart = columns > 0 ? columns : armyColumnsAtStart;
+        armyRows = armyRowsAtStart; 
+        armyColumns = armyColumnsAtStart;
+        SetAlienArmy();
     }
 
-    private bool CheckComponentsNeeded()
+    // - - - - - Alien army setting - - - - -
+    #if UNITY_EDITOR
+    /// <summary>
+    /// Set the data of the alien amy and generate it if there is no 'AlienArmyGenerator' script in this same gameObject. Alien generator script should only be on a test scene.
+    /// </summary>
+    private void SetAlienArmy()
     {
-        if (alienPrefab == null || HUD_Panel == null)
-            return false;
-        return true;
-    }
-    private IEnumerator SetAlienArmy()
-    {
-        if (GetComponent<AlienArmyGenerator>() == null) // Alien generator script should only be on a test scene
-        {
-            SetAlienArmyData();
-            GenerateAlienArmy();
-            yield return null;
-        }
-        else
+        // Just get the data of the aliens from the generator code if there is any and leave the instancing for that generator code.
+        if (GetComponent<AlienArmyEditorGenerator>() != null)
             GetDataFromGeneratorCode();
-        SetAliensData();
+        // Generate the army in this code if there is no generator code present.
+        else
+        {
+            // Destroy existing alien army if there is one already created
+            foreach (Transform child in GetComponentsInChildren<Transform>())
+            {
+                if (child == transform) continue;
+                DestroyImmediate(child.gameObject);
+            }
+
+            // Generate an alien army
+            SetAlienArmyDataForInstancing();
+            GenerateAlienArmy();
+        }
+            
+        // Get all the data ready for the other codes of the alien army
+        SetAliensDataAfterInstancing();
         OnArmyStart?.Invoke();
-        yield return null;
     }
-    private void SetAlienArmyData()
+    private void GetDataFromGeneratorCode()
+    {
+        var generatorCode = GetComponent<AlienArmyEditorGenerator>();
+        alienSize = generatorCode.alienSize;
+        distanceBetweenAliens = generatorCode.distanceBetweenAliens;
+        armyRowsAtStart = generatorCode.armyRows;
+        armyColumnsAtStart = generatorCode.armyColumns;
+    }
+    #else
+    private void SetAlienArmy()
+    {
+        // Destroy existing alien army if there is one already created
+        foreach (Transform child in GetComponentsInChildren<Transform>())
+        {
+            if (child == transform) continue;
+            DestroyImmediate(child.gameObject);
+        }
+
+        // Generate an alien army
+        SetAlienArmyDataForInstancing();
+        GenerateAlienArmy();
+            
+        // Get all the data ready for the other codes of the alien army
+        SetAliensDataAfterInstancing();
+        OnArmyStart?.Invoke();
+    }
+    #endif
+    private void SetAlienArmyDataForInstancing()
     {
         // Get data needed for instancing
         alienSize = alienPrefab.GetComponent<SpriteRenderer>().size * alienPrefab.transform.lossyScale;
-        distanceBetweenAliens = new Vector2(0.7f, 0.3f);
         var leftScreenBound = ScreenBounds.leftScreenBound;
-        var rightLevelBound = ScreenBounds.rightLevelBound;
-        var upScreenBound = ScreenBounds.upperScreenBound;
-        var levelWidth = (Mathf.Abs(leftScreenBound) + Mathf.Abs(rightLevelBound));
+        var rightLevelBoundBeforeHUD = ScreenBounds.rightLevelBoundBeforeHUD;
+        var upScreenBound = ScreenBounds.aboveScreenBound;
+        var levelWidth = (Mathf.Abs(leftScreenBound) + Mathf.Abs(rightLevelBoundBeforeHUD));
         centerPos = new Vector2((levelWidth / 2f) + leftScreenBound, centerHeight);
 
         // Evade math errors with variable values
@@ -81,78 +122,70 @@ public class AlienArmy : MonoBehaviour
         if (distanceBetweenAliens.x < 0) distanceBetweenAliens.x = 0;
         if (distanceBetweenAliens.y < 0) distanceBetweenAliens.y = 0;
 
-        // Limit the center position values
+        // Limit the center position values to evade instancing outside of the screen view.
         if ((centerPos.y + alienSize.y + distanceBetweenAliens.y / 2) > upScreenBound)
             centerPos.y = upScreenBound - alienSize.y - distanceBetweenAliens.y / 2;
         else if ((centerPos.y - alienSize.y - distanceBetweenAliens.y / 2) < -upScreenBound)
             centerPos.y = -upScreenBound + alienSize.y + distanceBetweenAliens.y / 2;
-        if ((centerPos.x + alienSize.x + distanceBetweenAliens.x / 2) > rightLevelBound)
-            centerPos.x = rightLevelBound - alienSize.x - distanceBetweenAliens.x / 2;
+        if ((centerPos.x + alienSize.x + distanceBetweenAliens.x / 2) > rightLevelBoundBeforeHUD)
+            centerPos.x = rightLevelBoundBeforeHUD - alienSize.x - distanceBetweenAliens.x / 2;
         else if ((centerPos.x - alienSize.x - distanceBetweenAliens.x / 2) < leftScreenBound)
             centerPos.x = leftScreenBound + alienSize.y + distanceBetweenAliens.y / 2;
     }
     private void GenerateAlienArmy()
     {
-        // Destroy existing alien armys if there are any
-        Transform[] childs = GetComponentsInChildren<Transform>();
-        for (int i = 1; i < childs.Length; i++)
-            Destroy(childs[i].gameObject);
-
-        // Instantiate the first alien, the one that tells us the position of the first row and the first column
+        // Set the first alien as the one in the upper left corner of the aliens grid
         var firstPos = new Vector2();
         firstPos.x = -((alienSize.x / 2) + (distanceBetweenAliens.x / 2)) * (armyColumns - 1);
         firstPos.y = ((alienSize.y / 2) + (distanceBetweenAliens.y / 2)) * (armyRows - 1);
-        var firstAlienPos = new Vector2(centerPos.x + firstPos.x, centerPos.y + firstPos.y);
-        var instantiatedAlien = Instantiate(alienPrefab, transform);
-        instantiatedAlien.transform.position = firstAlienPos;
 
-        // Instantiate the rest of the aliens in order
+        // Evate creating aliens outside the screen
+        if ((centerPos.x + firstPos.x - alienSize.x / 2 < ScreenBounds.leftScreenBound) || (centerPos.x - firstPos.x + alienSize.x / 2 > ScreenBounds.rightLevelBoundBeforeHUD))
+        {
+            if (armyColumns > 1) // evade endless iteration 
+            {
+                armyColumns--;
+                GenerateAlienArmy();
+                return;
+            }
+        }
+        if ((centerPos.y + firstPos.y + alienSize.y / 2 > ScreenBounds.aboveScreenBound) || (centerPos.y - firstPos.y - alienSize.y / 2 < -ScreenBounds.aboveScreenBound))
+        {
+            if (armyRows > 1) // evade endless iteration 
+            {
+                armyRows--;
+                GenerateAlienArmy();
+                return;
+            }
+        }
+
+        // Instantiate the aliens in order
+        var firstAlienPos = new Vector2(centerPos.x + firstPos.x, centerPos.y + firstPos.y);
         var currentInstancingPosition = firstAlienPos;
+        GameObject instantiatedAlien;
         for (int i = 0; i < armyRows; i++)
         {
             for (int j = 0; j < armyColumns; j++)
             {
-                // First alien already instantiated
-                if (i == 0 && j == 0)
-                    continue;
-
                 // Instance new alien
                 instantiatedAlien = Instantiate(alienPrefab, transform);
 
-                // Positioning aliens through the same row, if they are not the first one in the row
+                // Change row position
                 if (j != 0)
                     currentInstancingPosition += new Vector2(alienSize.x + distanceBetweenAliens.x, 0f);
                 instantiatedAlien.transform.position = currentInstancingPosition;
             }
-            // Positioning aliens from the first column each one in a new row
+            // Change column position
             currentInstancingPosition = new Vector2(firstAlienPos.x, currentInstancingPosition.y - alienSize.y - distanceBetweenAliens.y);
         }
     }
-    /// <summary>
-    /// Get data of the army features from the army generator code, those will be needed for the other scripts that also manage the alien army behaviour
-    /// </summary>
-    private void GetDataFromGeneratorCode()
-    {
-        var generatorCode = gameObject.GetComponentInParent<AlienArmyGenerator>();
-        if (generatorCode != null)
-        {
-            alienSize = generatorCode.alienSize;
-            distanceBetweenAliens = generatorCode.distanceBetweenAliens;
-            armyRowsAtStart = generatorCode.armyRows;
-            armyColumnsAtStart = generatorCode.armyColumns;
-        }
-        else
-        {
-            print("army generator code not found and is imprescindible!");
-            Destroy(this);
-            Debug.Break();
-        }
-    }
+    
     /// <summary>
     /// Set all of the aliens data, this is the main purpose of this script, it gets ready all of the data for all the other scripts that manages the alien army
     /// </summary>
-    private void SetAliensData()
+    private void SetAliensDataAfterInstancing()
     {
+        // Get aliens total amount
         currentAmount = totalAmount = armyRowsAtStart * armyColumnsAtStart;
 
         // Get aliens gameObjects
@@ -184,8 +217,10 @@ public class AlienArmy : MonoBehaviour
             aliensByColumns.Add(currentColumnOfAliens);
         }
     }
+
+    // - - - - - Public methods - - - - - 
     /// <summary>
-    /// Behaviour when any alien gets destroyed. Remove an specific alien of all of the lists and from other relevant data.
+    /// Remove an specific alien of all of the lists and from other relevant data.
     /// </summary>
     public static void RemovingAlien(Alien alienToRemove)
     {
@@ -195,49 +230,53 @@ public class AlienArmy : MonoBehaviour
         {
             if (instance != null)
             {
-                Destroy(instance);
+
+                GameManager.OnWinGame?.Invoke();
+                Destroy(instance.gameObject);
                 return;
             }
         }
 
-        // Slow the movement of the army for a short time
-        instance.gameObject.GetComponent<AlienArmy_Movement>().TemporalArmySlow();
-
-        // The destroyed alien is not gonna be in count for the next movements (evades checking on components constantly)
+        // The destroyed alien is not gonna be in count for some iterations.
         alienToRemove.isAlive = false;
 
-        // Check if there is any alien alive in the row, else remove the row from the list of rows and adjust all rows position
+        // Remove row from the list of rows if we removed the last alien from that row.
         for (int i = 0; i < armyColumnsAtStart; i++)
         {
-            if (aliensByRows[alienToRemove.position.y][i].isAlive)
+            if (aliensByRows[alienToRemove.gridPosition.y][i].isAlive)
                 goto Checkcolumns;
         }
-        aliensByRows.RemoveAt(alienToRemove.position.y);
+        aliensByRows.RemoveAt(alienToRemove.gridPosition.y);
+        armyRows--;
+
+        // If we remove a row, then we got to update the aliens grid position 
         for (int i = 0; i < aliensByRows.Count; i++)
         {
-            if (i >= alienToRemove.position.y)
+            if (i >= alienToRemove.gridPosition.y)
             {
                 for (int j = 0; j < armyColumnsAtStart; j++)
-                    aliensByRows[i][j].position.y--;
+                    aliensByRows[i][j].gridPosition.y--;
             }
         }
 
-    Checkcolumns:
-        // Check if there is any alien alive in the column, else remove the column from the list and adjust all columns position
+        Checkcolumns:
+        // Remove column from the list of column if we removed the last alien from that column.
         for (int i = 0; i < armyRowsAtStart; i++)
         {
-            if (aliensByColumns[alienToRemove.position.x][i].isAlive)
+            if (aliensByColumns[alienToRemove.gridPosition.x][i].isAlive)
                 return;
         }
-        aliensByColumns.RemoveAt(alienToRemove.position.x);
+        aliensByColumns.RemoveAt(alienToRemove.gridPosition.x);
+        armyColumns--;
+
+        // If we remove a column, then we got to update the aliens grid position 
         for (int i = 0; i < aliensByColumns.Count; i++)
         {
-            if (i >= alienToRemove.position.x)
+            if (i >= alienToRemove.gridPosition.x)
             {
                 for (int j = 0; j < armyRowsAtStart; j++)
-                    aliensByColumns[i][j].position.x--;
+                    aliensByColumns[i][j].gridPosition.x--;
             }
         }
     }
-
 }

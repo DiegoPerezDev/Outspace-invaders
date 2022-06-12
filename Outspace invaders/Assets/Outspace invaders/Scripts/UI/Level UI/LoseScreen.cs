@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
+/// <summary>
+/// Behaviour of the game when the player get to the lose screen.
+/// </summary>
 public class LoseScreen : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI loseScore, loseHighScore;
@@ -30,10 +33,10 @@ public class LoseScreen : MonoBehaviour
     {
         if (countdownToMainMenuCor != null)
             StopCoroutine(countdownToMainMenuCor);
-        countdownToMainMenuCor = countdownToMainMenu();
+        countdownToMainMenuCor = CountdownToMainMenu();
         StartCoroutine(countdownToMainMenuCor);
     }
-    private IEnumerator countdownToMainMenu()
+    private IEnumerator CountdownToMainMenu()
     {
         yield return new WaitForSecondsRealtime(4f);
         GameManager.EnterScene(0);

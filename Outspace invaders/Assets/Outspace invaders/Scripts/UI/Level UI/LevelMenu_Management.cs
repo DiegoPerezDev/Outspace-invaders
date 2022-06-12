@@ -4,10 +4,13 @@ using UnityEngine;
 using System.Linq;
 using System;
 
+/// <summary>
+/// Manager of the menus for the levels. There are other codes for other scenes like the main menu.
+/// </summary>
 public class LevelMenu_Management : MenuManagement
 {
-    // Menu data
-    [SerializeField] private GameObject HUD, pauseMainMenu, loseCanvas, pauseQuitMenu;
+    [SerializeField] private GameObject HUD, pauseMainMenu, loseCanvas, pauseQuitMenu, winCanvas;
+    private static LevelMenu_Management instance;
 
     // Audio
     [HideInInspector] public enum UI_AudioNames { lose, pause, unPause }
@@ -17,35 +20,43 @@ public class LevelMenu_Management : MenuManagement
     public override void OnEnable()
     {
         base.OnEnable();
+        instance = this;
         GameManager.OnSceneLoaded += StartingScene;
-        GameManager.OnLoseGame += Lose;
-        InputsManager.pauseGameInput += PauseButtonPressed;
+        GameManager.OnLoseGame    += Lose;
+        GameManager.OnWinGame     += Win;
     }
     public override void OnDisable()
     {
         base.OnDisable();
         GameManager.OnSceneLoaded -= StartingScene;
-        GameManager.OnLoseGame -= Lose;
-        InputsManager.pauseGameInput -= PauseButtonPressed;
+        GameManager.OnLoseGame    -= Lose;
+        GameManager.OnWinGame     -= Win;
     }
-
-    private void StartingScene()
+    public override void Start()
     {
-        OpenMenu(loadingScreen, false);
-
+        base.Start();
         // Get components
         string[] uiClipsPaths = { "lose", "pause", "unPause" };
         foreach (UI_AudioNames audioClip in Enum.GetValues(typeof(UI_AudioNames)))
             UI_Clips[(int)audioClip] = Resources.Load<AudioClip>($"Audio/UI_SFX/{uiClipsPaths[(int)audioClip]}");
+    }
 
-        // Set menus
-        CloseMenu(pauseMainMenu);
+    private void StartingScene()
+    {
+        // Close menus that are opened by default
         CloseMenu(pauseQuitMenu);
+        CloseMenu(pauseMainMenu);
+        // Close loading screen
         CloseMenu(false);
     }
     private void Lose()
     {
         OpenMenu(loseCanvas, true);
+        CloseMenu(HUD);
+    }
+    private void Win()
+    {
+        OpenMenu(winCanvas, true);
         CloseMenu(HUD);
     }
     public override void CheckForMenuClosing()
@@ -55,24 +66,24 @@ public class LevelMenu_Management : MenuManagement
             if (openedMenus.Last() == pauseMainMenu)
             {
                 CloseMenu(false);
-                GameManager.OnPausing?.Invoke();
+                GameManager.OnPauseByTime?.Invoke(false);
             }
             else
                 base.CheckForMenuClosing();
         }
     }
 
-    private void PauseButtonPressed()
+    public static void PauseButtonPressed()
     {
         if (openedMenus.Count < 1)
         {
-            AudioManager.PlayAudio(AudioManager.UI_AudioSource, UI_Clips[(int)UI_AudioNames.pause]);
-            OpenMenu(pauseMainMenu, false);
-                GameManager.OnPausing?.Invoke();
+            //AudioManager.PlayAudio(AudioManager.UI_AudioSource, UI_Clips[(int)UI_AudioNames.pause]);
+            OpenMenu(instance.pauseMainMenu, false);
+            GameManager.OnPauseByTime?.Invoke(true);
         }
     }
 
-    // - - - - - BUTTON FUNCTIONS - - - - -
+    // - - - - - BUTTON FUNCTIONS - - - - - 
 
     public void MainPausePanelButtonsActions(string buttonName)
     {
@@ -82,12 +93,13 @@ public class LevelMenu_Management : MenuManagement
         {
             case "resume":
                 CloseMenu(true);
-                GameManager.OnPausing?.Invoke();
+                GameManager.OnPauseByTime?.Invoke(false);
                 break;
 
             case "mainmenu":
-                AudioManager.PlayAudio(AudioManager.UI_AudioSource, buttonAudioClip);
+                //AudioManager.PlayAudio(AudioManager.UI_AudioSource, buttonAudioClip);
                 GameManager.SaveHighScore();
+                GameManager.OnPauseByTime?.Invoke(false);
                 GameManager.EnterScene(0);
                 break;
 

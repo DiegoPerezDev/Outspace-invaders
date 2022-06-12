@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-
+/// <summary>
+/// Base class of the menu managers in the game. There are menu managers for each game scene type, like for the levels and the main menu.
+/// <para> Mainly, it manages the opening and closing of the menus. These menus are filled in a list for the 'returning to previous menu' functionality.</para>
+/// </summary>
 public class MenuManagement : MonoBehaviour
 {
     protected static List<GameObject> openedMenus = new List<GameObject>();
@@ -12,9 +15,14 @@ public class MenuManagement : MonoBehaviour
     protected static string buttonNotFoundMessage = "button attempt failed with the button of name: ";
 
 
-    public virtual void OnEnable() => InputsManager.MenuBackInput += CheckForMenuClosing;
-    public virtual void OnDisable() => InputsManager.MenuBackInput -= CheckForMenuClosing;
-
+    // - - - - - MONOBEHAVIOUR METHODS - - - - -
+    public virtual void OnEnable() => InputsManager.OnMenuBackInput += CheckForMenuClosing;
+    public virtual void OnDisable() => InputsManager.OnMenuBackInput -= CheckForMenuClosing;
+    public virtual void Start()
+    {
+        openedMenus = new List<GameObject>();
+        OpenMenu(loadingScreen, false);
+    }
 
     // - - - - - MENU MANAGEMENT METHODS - - - - -
     /// <summary> Open a new panel menu of the UI. </summary>

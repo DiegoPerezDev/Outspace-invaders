@@ -1,0 +1,17 @@
+GAME NAME: Out-Space invaders
+GAME GENRE: Arcade 80's style nes shooter (‘space invaders’ like)
+VERSION: V0.1
+
+SUMMARY:
+First design with no art or audio. Only the main functionalities of the gameplay.
+Consists in the base mechanics of ‘space invaders’ (Taito, 1978), but with just one enemy type in the alien army and also just one player. 
+
+TECHNICAL SPECIFICATIONS:
+- This game only works for Windows OS in a 1366 * 768 resolution.
+- Move the player sideways with ‘A’ and ‘D’. navigate through the menu with ‘esc’ and with the mouse.
+
+OBSERVATIONS:
+    • Development time: From 03/21/2022 to 06/10/2022
+    • The game was dropped after this version for these reasons:
+        ◦ Lack of motivation to make a performed version of this game.
+        ◦ Too much time on this project, too many problems found in the way.

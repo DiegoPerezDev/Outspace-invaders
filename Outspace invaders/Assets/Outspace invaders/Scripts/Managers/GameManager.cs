@@ -3,49 +3,43 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary> This specific 'GameManager' script works for one scene games.
-/// <para> - Scene transitions: Scene loading and setting. </para> 
-/// <para> - Level behaviour: Pause, win and lose behaviour. </para>
+/// <summary>
+/// This codes manages the scene transition, the data saving and loading, the pausing and the gameplay delegates.
 /// </summary>
 public class GameManager : MonoBehaviour
 {
+    // General use
+    public delegate void ManagerDelegate();
+    public delegate void PauseDelegate(bool pausing);
     public static GameManager instance;
+    public static PauseDelegate OnPauseByTime;
+    public static bool inPause;
 
-    // Transition data
-    [SerializeField] private bool printTransitionStates;
+    // Scenes transition
+    public static ManagerDelegate OnSceneLoaded;
+    public static bool inLoadingScene = true, inMenu;
     private static bool firstGameLoadSinceExecution = true;
-    public delegate void LoadingDelegate();
-    public static LoadingDelegate OnSceneLoaded;
     private static IEnumerator loadingCorroutine;
-    public static bool inLoadingScene = true;
-    public static bool inMenu;
+    [SerializeField] private bool printTransitionStates;
 
-    // Level management
-    public static readonly float LoseToResetDelay = 0.7f;
-    public static bool playing, inPause;
+    // Level gameplay management
     public delegate void LevelDelegate();
-    public static LevelDelegate OnLevelStart, OnLoseGame;
-    public delegate void Pausing();
-    public static Pausing OnPausing;
+    public delegate void LevelPauseDelegate(bool pausing);
+    public static LevelDelegate OnLevelStart, OnLoseGame, OnWinGame;
+    public static LevelPauseDelegate OnLevelPauseByFreezing;
 
-    // Saving data
+    // Data saving
     public delegate void SavingDataDelegate();
     public static SavingDataDelegate OnSaving, OnLoading;
+    private static readonly string highScoreKey = "highscore";
 
+    #region MonoBehaviour methods
 
     private void OnEnable()
     {
-        OnLevelStart += SetLevel;
         OnLoseGame += LoseGame;
-        OnPausing += Pause;
-        AudioManager.Enable();
-    }
-    private void OnDisable()
-    {
-        AudioManager.Disable();
-        OnLevelStart -= SetLevel;
-        OnLoseGame -= LoseGame;
-        OnPausing -= Pause;
+        OnWinGame += WinGame;
+        OnPauseByTime += PauseByTime;
     }
     void Awake()
     {
@@ -61,50 +55,56 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         // Load saved data and start the game
-        LoadHighScore(); //Use 'ResetSavingData()' instead for restarting the saving data for testing purposes
-        EnterScene();
+        LoadHighScore();
+        InputsManager.SetInputManager();
+        RestartScene();
     }
-    /// <summary>
-    /// Behaviour of the game when minimizing. In this case we open the pause menu.
-    /// </summary>
+#if !UNITY_EDITOR
     void OnApplicationPause(bool pauseStatus)
     {
-        if (!pauseStatus || !playing)
+        // Pause the game when minimizing.
+        if (!pauseStatus || inPause)
             return;
-        if (!inPause)
-            OnPausing?.Invoke();
+        OnPauseByTime?.Invoke(!inPause);
     }
+#endif
 
+    #endregion
 
-    #region Game Restarting
+    #region Scene transitioning
 
     /// <summary>
-    /// Restart the whole game to the main menu.
+    /// Go to a specific scene. '0' should be the main menu and each other number are the respective number of the levels.
     /// </summary>
     public static void EnterScene(int sceneIndex)
     {
         if (loadingCorroutine == null)
         {
             inLoadingScene = true;
-            AudioManager.StopLevelSong();
-            instance.StartCoroutine(loadingCorroutine = RestartToScene(sceneIndex));
+            //AudioManager.StopLevelSong();
+            instance.StartCoroutine(loadingCorroutine = StartScene(sceneIndex));
         }
         else
             print("trying to enter a scene but already loading one");
     }
-    public static void EnterScene() => EnterScene(SceneManager.GetActiveScene().buildIndex);
-    /// <summary> 
-    /// Load scene. Go to the main menu except if its the first time calling it, for testing purposes. 
-    /// </summary>
-    private static IEnumerator RestartToScene(int sceneIndex)
+    private static void EnterScene(int sceneIndex, float delay) => instance.StartCoroutine(EnterSceneAfterDelay(sceneIndex, delay));
+    private static IEnumerator EnterSceneAfterDelay(int sceneIndex, float delay)
+    {
+        delay = delay > 0 ? 1 : delay;
+        yield return new WaitForSecondsRealtime(delay);
+        EnterScene(sceneIndex);
+    }
+    public static void RestartScene() => EnterScene(SceneManager.GetActiveScene().buildIndex);
+    private static IEnumerator StartScene(int sceneIndex)
     {
         float minDelay = 0.1f, timer = 0f;
-        //OnPausing?.Invoke();
 
-        // Dont re-load the scene if we are just opening the game. It also helps to keep the game in the scene we are about to test in the editor.
+        // First time entering the scene:
+        //  - Dont re-load the scene if we are just opening the game.
+        //  - It also helps to keep the game in the scene we are about to test when we are using the editor.
         if (firstGameLoadSinceExecution)
         {
-            InputsManager.SetInputManager(); // Start the input system
+             // Start the input system
             firstGameLoadSinceExecution = false;
             if (instance.printTransitionStates)
                 print("Loading scene... Entering desired scene. (1/2)");
@@ -135,28 +135,20 @@ public class GameManager : MonoBehaviour
 
         if(SceneManager.GetActiveScene().buildIndex > 0)
             OnLevelStart?.Invoke();
+        else
+            InputsManager.EnableMenuActionMaps();
 
         loadingCorroutine = null;
         inLoadingScene = false;
     }
-    /// <summary>
-    /// Set data needed for playing a specific scene and then play the level start delegate
-    /// </summary>
-    private static void SetLevel()
+
+#endregion
+
+#region Methods for delegates
+
+    private static void PauseByTime(bool pausing)
     {
-        playing = true;
-        
-    }
-
-    #endregion
-
-    #region Level events: pause and lose
-
-    private static void Pause()
-    {
-        inPause = !inPause;
-        playing = !inPause;
-
+        inPause = pausing;
         if (inPause)
             Time.timeScale = 0;
         else
@@ -164,18 +156,23 @@ public class GameManager : MonoBehaviour
     }
     private static void LoseGame()
     {
-        playing = false;
-        OnPausing?.Invoke();
+        //OnPauseByTime?.Invoke();
+        OnLevelPauseByFreezing?.Invoke(true);
         instance.StopAllCoroutines();
         SaveHighScore();
-        EnterScene(0);
+        EnterScene(0, 3f);
+    }
+    private static void WinGame()
+    {
+        OnLevelPauseByFreezing?.Invoke(true);
+        instance.StopAllCoroutines();
+        SaveHighScore();
+        EnterScene(0, 3f);
     }
 
-    #endregion
+#endregion
 
-    #region Saving data
-
-    private static readonly string highScoreKey = "highscore";
+#region Data save and load
 
     public static void SaveHighScore()
     {
@@ -188,6 +185,6 @@ public class GameManager : MonoBehaviour
         Player.highScore = PlayerPrefs.GetInt(highScoreKey);
     }
 
-    #endregion
+#endregion
 
 }

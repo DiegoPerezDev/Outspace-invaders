@@ -8,22 +8,30 @@ using System;
 /// <para> This class manage all the audio playing in the game, for both music and sfx, for all scenes. </para>
 /// <para> All codes should use audio by using the methods of this class, not playing audio in their own. </para>
 /// </summary>
-public class AudioManager
+public class AudioManager : MonoBehaviour
 {
     public static AudioSource musicSource, UI_AudioSource;
     public static AudioSource[] GameAudioSource;
-    private static AudioClip[] songsClips = new AudioClip[Enum.GetValues(typeof(Songs)).Length];
     public static AudioMixer musicMixer, generalSFX_Mixer, UI_SFX_Mixer;
     public static GameObject GameAudioGO;
     public static GameObject musicSourceGO, GameAudioSourceGO, UI_AudioSourceGO;
     public enum Songs { mainmenu, level }
+    private static AudioClip[] songsClips = new AudioClip[Enum.GetValues(typeof(Songs)).Length];
 
 
     public static void Enable()
     {
+        // Set delegates
         GameManager.OnSceneLoaded += StartingScene;
         GameManager.OnLevelStart += LevelStart;
         GameManager.OnLoseGame += LoseLevel;
+
+        // Find resources
+        songsClips[(int)Songs.mainmenu] = Resources.Load<AudioClip>("Audio/Music/LoopMenu");
+        songsClips[(int)Songs.level]    = Resources.Load<AudioClip>("Audio/Music/push_ahead_0");
+        musicMixer       = Resources.Load<AudioMixer>("Audio/MusicMixer");
+        generalSFX_Mixer = Resources.Load<AudioMixer>("Audio/GeneralSFX_Mixer");
+        UI_SFX_Mixer     = Resources.Load<AudioMixer>("Audio/UI_SFX_Mixer");
     }
     public static void Disable()
     {
@@ -32,18 +40,10 @@ public class AudioManager
         GameManager.OnLoseGame -= LoseLevel;
     }
 
-
     #region Level settings functions
 
     private static void StartingScene()
     {
-        // Find resources
-        songsClips[(int)Songs.mainmenu] = Resources.Load<AudioClip>("Audio/Music/LoopMenu");
-        songsClips[(int)Songs.level] = Resources.Load<AudioClip>("Audio/Music/push_ahead_0");
-        musicMixer = Resources.Load<AudioMixer>("Audio/MusicMixer");
-        generalSFX_Mixer = Resources.Load<AudioMixer>("Audio/GeneralSFX_Mixer");
-        UI_SFX_Mixer = Resources.Load<AudioMixer>("Audio/UI_SFX_Mixer");
-
         // Find components
         GameAudioGO = GameAudioSourceGO;
         GameAudioSource = GameAudioSourceGO.GetComponents<AudioSource>();
@@ -62,7 +62,9 @@ public class AudioManager
     #region SFX methods
 
     /// <summary>
-    /// Try to play a certain sfx in an specific audio source array. If there is another clip playing in one of this sources then go to the next source of the array to play the next clip. If all sources are playing then add a new one to the gameobject so it never interrupt a source that is playing at the time.
+    /// Try to play a certain sfx in an specific audio source array. 
+    /// If there is another clip playing in one of this sources then go to the next source of the array to play the next clip. 
+    /// If all sources are playing then add a new one to the gameobject so it never interrupt a source that is playing at the time.
     /// </summary>
     public static void PlayAudio(ref AudioSource[] sources, AudioClip clip, GameObject objectOfSources)
     {

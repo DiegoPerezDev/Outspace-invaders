@@ -9,20 +9,20 @@ public class HUD : MonoBehaviour
     [SerializeField] private TextMeshProUGUI highScoreTMP, livesTMP;
     private readonly string scoreMessage = "SCORE:\n", highScoreMessage = "HIGH SCORE:\n", livesMessage = "LIVES:\n";
     private int playerLives;
-    private readonly int minRandomScorePoints = 50, maxRandomScorePoints = 300;
-    private int randomScoreIntervalVariation;
+    private static readonly int minRandomScorePoints = 50, maxRandomScorePoints = 300;
+    private static int randomScoreIntervalVariation;
+    private static HUD instance;
     
     private void OnEnable()
     {
+        instance = this;   
         AlienArmy.OnAlienDestroyed += AddScore;
         Player.OnLosingLive += SubstractLive;
-        RandomAlien.OnRandomAlienDestroyed += AddRandomScore;
     }
     private void OnDisable()
     {
         AlienArmy.OnAlienDestroyed -= AddScore;
         Player.OnLosingLive -= SubstractLive;
-        RandomAlien.OnRandomAlienDestroyed -= AddRandomScore;
     }
     void Start()
     {
@@ -38,12 +38,12 @@ public class HUD : MonoBehaviour
         Player.score += Player.scoreForKill;
         scoreTMP.text = $"{scoreMessage}{Player.score}";
     }
-    private void AddRandomScore()
+    public static void AddRandomScore()
     {
         // Random score is a number between 'min random score point' and 'max random score point' and its internal numbers
         var randomScoreToAdd = Map(Random.Range(1, randomScoreIntervalVariation), 1, randomScoreIntervalVariation, minRandomScorePoints, maxRandomScorePoints);
         Player.score += randomScoreToAdd;
-        scoreTMP.text = $"{scoreMessage}{Player.score}";
+        instance.scoreTMP.text = $"{instance.scoreMessage}{Player.score}";
     }
     private void SubstractLive()
     {
@@ -51,7 +51,7 @@ public class HUD : MonoBehaviour
         if(playerLives >= 0)
             livesTMP.text = $"{livesMessage}{Player.lives - 1}";
     }
-    private int Map(int x, int in_min, int in_max, int out_min, int out_max)
+    private static int Map(int x, int in_min, int in_max, int out_min, int out_max)
     {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }

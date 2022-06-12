@@ -1,0 +1,57 @@
+UNITY DEVELOPMENT ORDER
+
+SUMMARY
+* In this document you will find how we order the folders and files in the Unity project, both the Unity project folder and the Unity Hierarchy folder.
+
+
+HIERARCHY
+
+      [SCENE NAME]
+
+    • Cameras
+    • Characters: 
+      All of the characters here, including the player and the npcs.
+    • Level Dev:
+      All of the level game objects that have movement or any kind of interaction different from a regular collision.
+    • Level: 
+      All of the level game objects that does not have any interactions. This game objects can be optimized better than the ‘Level Dev’ game objects and that’s why we separate them.
+    • UI: 
+      For all of the GUI Of the scene.
+    • Managers: 
+      Non-destroyable folder for scripts that should be working between all scenes.
+    • EventSystem
+
+
+PROJECT FOLDER
+    
+      ASSETS
+
+             [Other packages]
+              . . .
+             [Game title]
+	
+    • Audio
+        ◦ Sfx
+        ◦ Music
+    • Art2D
+        ◦ Sprites
+        ◦ Backgrounds
+        ◦ Icons
+        ◦ Animations
+    • Art3D
+        ◦ Models
+        ◦ Animations
+    • VFX
+        ◦ Shaders
+        ◦ Particle systems
+    • Materials
+        ◦ UV materials
+        ◦ Physic materials
+    • Prefabs: 
+      * In this folder we place more folders with the same order and naming like this  father folder, but it only contains prefab game objects.
+    • Resources
+      * In this folder we place more folders with the same order and naming like this  father folder, but it only contains assets called directly by codes, called with the resource class of the Unity Engine “Resource.Load()”.
+    • Scenes
+      * All the scenes of the game
+    • Scripts
+      * In this folder we place more folders with the same order as the hierarchy folder.

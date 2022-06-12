@@ -2,97 +2,105 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// This script manages the movement of the alien army, similar to the movement of 'Space invaders 1978'.
+/// </summary>
 public class AlienArmy_Movement : MonoBehaviour
 {
-    [Range(0.1f, 1f)] [SerializeField] private float startRhythmDelay = 0.5f;
-    [Range(0.005f, 0.02f)][SerializeField] private float rhythmDelayDecrease = 0.01f;
-    [SerializeField] private float xMoveDistance = 0.2f, yMoveDistance = 0.6f;
-    private float rhythmDelay;
-    private readonly float slowDownMaxDelay = 0.5f;
-    private float slowDownDelay, previousArmySpeed;
+    public static AlienArmy_Movement instance;
+    [Range(0.4f, 2f)] [SerializeField] private float startArmyRhythmDelay = 1.5f;
+    [Range(0.04f, 0.09f)][SerializeField] private float lastRhythmDelay = 0.02f;
+    [SerializeField] private float xMoveDistance = 0.2f, yMoveDistance = 0.6f, delayBeforStartMoving = 0.1f;
+    private float armyRhythmDelay, rhythmDelayDecrease, slowDownDelay;
     private bool movingRight = true;
-    private int lastTwentyPercentAliens;
-    private IEnumerator SlowMovementCor;
-    private int rowNumInTheMove;
-
+    private int lastAliensAmount, rowIndexInTheMove;
+    private IEnumerator movementCor, slowMovementCor;
+    private bool slowMoving;
+    
 
     void OnEnable()
     {
-        AlienArmy.OnArmyStart += StartMovement;
-        AlienArmy.OnAlienDestroyed += CheckForSpeedIncrease;
+        instance = this;
+        AlienArmy.OnArmyStart += StartScript;
+        AlienArmy.OnAlienDestroyed += SpeedChangingWhenAlienDead;
+        GameManager.OnLevelPauseByFreezing += DisableMovement;
     }
     void OnDisable()
     {
-        AlienArmy.OnArmyStart -= StartMovement;
-        AlienArmy.OnAlienDestroyed -= CheckForSpeedIncrease;
+        instance = null;
+        AlienArmy.OnArmyStart -= StartScript;
+        AlienArmy.OnAlienDestroyed -= SpeedChangingWhenAlienDead;
+        GameManager.OnLevelPauseByFreezing -= DisableMovement;
     }
     void OnDestroy()
     {
-        if(SlowMovementCor != null)
-            StopCoroutine(SlowMovementCor);
+        if(movementCor != null)
+            StopCoroutine(movementCor);
         StopAllCoroutines();
     }
 
     /// <summary>
-    /// Start method for this class, called at the end of the set-up of the 'AlienArmy' script
+    /// Start moving when the alien army is already set.
     /// </summary>
-    private void StartMovement()
+    private void StartScript()
     {
-        // Set rhythm of the movement, the delay between the movement of the rows of the aliens
-        lastTwentyPercentAliens = (int)((AlienArmy.totalAmount * 0.2f) - 1f);
-        var maxNumOfFastenByAlienKill = (8f + lastTwentyPercentAliens); // Fasten by alien kill every 10% less of the total amount of aliens till theres only 20% left, also after every single kill of the last 20%
-        if (rhythmDelayDecrease < (startRhythmDelay - 0.021f) / maxNumOfFastenByAlienKill)
-            rhythmDelayDecrease = (startRhythmDelay - 0.023f) / maxNumOfFastenByAlienKill;
-        rhythmDelay = startRhythmDelay;
-
-        // Start aliens constant movement
+        SetRhythmVariableValues();
         movingRight = true;
-        SlowMovementCor = RhythmicMovement();
-        rowNumInTheMove = AlienArmy.aliensByRows.Count - 1;
-        StartCoroutine(SlowMovementCor);
+        rowIndexInTheMove = AlienArmy.aliensByRows.Count - 1;
+        Invoke("StartMovement", delayBeforStartMoving);
     }
     /// <summary>
-    /// Speed up the aliens ryhthm every time there is 10% less aliens, only if there are more than 20%. In case of less than 20% increase speed for each alien destroyed.
+    /// Set all of the variables for managing the rhythm of the movement through the game. See the documentation for specific details.
+    /// <para> Make the army movement faster every time there is 10% less aliens of the total amount, till there is only 10% left, after that it will happen every single alien death.</para>
+    /// <para> The previous statement can only happen if there are at least 10 aliens in the army at the beginning.</para>
     /// </summary>
-    private void CheckForSpeedIncrease()
+    private void SetRhythmVariableValues()
     {
-        if (AlienArmy.currentAmount < lastTwentyPercentAliens)
-            IncreaseArmySpeed();
-        else
+        // Set the amount of times we are going to speed up the alien army
+        int maxNumOfFastenByAlienKill;
+        if (AlienArmy.totalAmount > 9)
         {
-            for (int i = 90; i > 20; i -= 10)
-            {
-                if (AlienArmy.currentAmount == AlienArmy.totalAmount * (i / 100f))
-                {
-                    //print($"Porcentaje of enemies left: {i}");
-                    IncreaseArmySpeed();
-                    break;
-                }
-            }
+            lastAliensAmount = (int)(AlienArmy.totalAmount * 0.1f);
+            maxNumOfFastenByAlienKill = (7 + lastAliensAmount);
         }
+        else
+            maxNumOfFastenByAlienKill = lastAliensAmount = AlienArmy.totalAmount - 1;
+
+        // the last rhythm should not be that fast as the engine speed so we limit this here.
+        lastRhythmDelay = (lastRhythmDelay < Time.fixedDeltaTime * 2) ? Time.fixedDeltaTime * 2 : lastRhythmDelay;
+
+        // The first row delay also cannot be faster than the last row delay.
+        armyRhythmDelay = startArmyRhythmDelay;
+        if (armyRhythmDelay / AlienArmy.armyRows < lastRhythmDelay)
+        {
+            print("This shouldn't happen.");
+            Debug.Break();
+        }
+
+        // Set the decrease time depending on the start delay wanted, the last delay wanted and the times we are going to speed up the army.
+        rhythmDelayDecrease = (startArmyRhythmDelay - lastRhythmDelay) / (maxNumOfFastenByAlienKill + 1);
     }
+    private void StartMovement()
+    {
+        movementCor = RhythmicMovement();
+        StartCoroutine(movementCor);
+    }
+
     /// <summary>
     /// Move all the army of aliens row by row with a certain rhythm
     /// </summary>
     private IEnumerator RhythmicMovement()
     {
-        // Stop the movement if there is no more aliens left
-        if (AlienArmy.aliensByRows.Count < 1)
-        {
-            print("No aliens found");
-            yield break;
-        }
- 
         // Check Lateral screen bounds to know if the movement should be down or to the sides.
         bool moveDown = CheckLateralBounds();
 
         // Move aliens row by row depending on the direction
-        var alienMaxRows = AlienArmy.aliensByRows.Count - 1;
-        
-        for (int y = alienMaxRows; y > -1; y--)
+        var alienMaxRowIndex = AlienArmy.aliensByRows.Count - 1;
+        for (int y = alienMaxRowIndex; y > -1; y--)
         {
-            if (y <= rowNumInTheMove)
-                rowNumInTheMove--;
+            // Remember which row we are moving for continuing where we left when we stop the movement on the player dying.
+            if (y <= rowIndexInTheMove)
+                rowIndexInTheMove--;
             else
                 continue;
 
@@ -122,81 +130,105 @@ public class AlienArmy_Movement : MonoBehaviour
                 }
             }
 
-            // Delay between the rows movements
+            // Delay between each row movement
             var timer = 0f;
-            while (timer < rhythmDelay)
+            var delayBetweenRowMovements = slowMoving? startArmyRhythmDelay : armyRhythmDelay / AlienArmy.armyRows;
+            while (timer < delayBetweenRowMovements)
             {
                 yield return null;
                 timer += Time.deltaTime;
             }
         }
 
-        rowNumInTheMove = alienMaxRows;
-
         // Change the direction of the movement after moving down
         if (moveDown)
             movingRight = !movingRight;
 
         // Restart
+        rowIndexInTheMove = alienMaxRowIndex;
+        yield return null;
         RestartMovementCor();
+    }
+    
+    /// <summary>
+    /// Speed up the aliens ryhthm every time there is 10% less aliens of the total amount, till there is only 20% left, after that it will happen every single alien death.
+    /// <para> If there is less than 25 aliens at the beginning then just speed up for every kill.</para>
+    /// </summary>
+    private void SpeedChangingWhenAlienDead()
+    {
+        if (AlienArmy.currentAmount <= lastAliensAmount + 1)
+        {
+            IncreaseArmySpeed(true);
+            TemporalArmySlow();
+        }
+        else
+        {
+            for (int i = 90; i > 10; i -= 10)
+            {
+                if (AlienArmy.currentAmount == (int)(AlienArmy.totalAmount * (i / 100f)))
+                {
+                    //print($"Porcentaje of enemies left: {i}");
+                    IncreaseArmySpeed(false);
+                    TemporalArmySlow();
+                    break;
+                }
+                else
+                {
+                    //print($"AlienArmy.currentAmount: {AlienArmy.currentAmount}");
+                    //print($"AlienArmy.totalAmount * (i / 100f): {(int)(AlienArmy.totalAmount * (i / 100f))}");
+                }
+            }
+        }
     }
     private void RestartMovementCor()
     {
-        if (SlowMovementCor != null)
-            StopCoroutine(SlowMovementCor);
-        SlowMovementCor = RhythmicMovement();
-        StartCoroutine(SlowMovementCor);
+        if (movementCor != null)
+            StopCoroutine(movementCor);
+        movementCor = RhythmicMovement();
+        StartCoroutine(movementCor);
     }
-
-    public void EnableMovement(bool enable)
+    private void DisableMovement(bool disable)
     {
-        if (enable)
-            RestartMovementCor();
-        else
+        if (disable)
         {
-            if (SlowMovementCor != null)
-                StopCoroutine(SlowMovementCor);
+            if(movementCor != null)
+                StopCoroutine(movementCor);
         }
+        else
+            RestartMovementCor();
     }
     /// <summary>
-    /// Increase the speed of the army movement by reducing the rhythm delay
+    /// Increase the speed of the army movement by reducing the rhythm delay 
     /// </summary>
-    private void IncreaseArmySpeed()
+    private void IncreaseArmySpeed(bool lastAliens)
     {
-        if (SlowMovementCor == null)
-            rhythmDelay -= rhythmDelayDecrease;
+        if(lastAliens)
+            armyRhythmDelay -= (rhythmDelayDecrease * 0.4f);
         else
-            previousArmySpeed -= rhythmDelayDecrease;
+            armyRhythmDelay -= (rhythmDelayDecrease * 1.6f);
+            
+        if (armyRhythmDelay * AlienArmy.armyRows < Time.fixedDeltaTime)
+        {
+            print("This should never happen");
+            armyRhythmDelay = Time.fixedDeltaTime * AlienArmy.armyRows;
+        }
+        //print($"rowRhythmDelay: {armyRhythmDelay / AlienArmy.armyRows}");
+        print($"armyRhythmDelay: {armyRhythmDelay}");
     }
     /// <summary>
     /// Slow the movement of the army every time an alien gets destroyed when they are less than half of the total aliens
     /// </summary>
-    public void TemporalArmySlow()
+    private void TemporalArmySlow()
     {
-        if (AlienArmy.currentAmount > (AlienArmy.armyRowsAtStart * AlienArmy.armyColumnsAtStart / 2))
-            return;
-
-        if (SlowMovementCor != null)
-        {
-            StopCoroutine(SlowMovementCor);
-            rhythmDelay = previousArmySpeed;
-            print("Ended slow delay method 2");
-            SlowMovementCor = null;
-        }
-        else
-        {
-            previousArmySpeed = rhythmDelay;
-        }
-
-        RestartMovementCor();
+        if(slowMovementCor != null) StopCoroutine(slowMovementCor);
+        slowMovementCor = null;
+        slowMovementCor = TemporalSlowMovement();
+        StartCoroutine(slowMovementCor);
     }
     private IEnumerator TemporalSlowMovement()
     {
-        print("started slow delay");
-
         // Make the movement slow
-        rhythmDelay = startRhythmDelay;
-        slowDownDelay = slowDownMaxDelay;
+        slowMoving = true;
 
         // Wait the respected delay
         while (slowDownDelay > 0)
@@ -206,12 +238,10 @@ public class AlienArmy_Movement : MonoBehaviour
         }
 
         // Turn the movement back to normal
-        rhythmDelay = previousArmySpeed;
-
-        print("Ended slow delay method 1");
+        slowMoving = false;
     }
     /// <summary>
-    /// Check the bounds of the level with the aliens columns more in left and right 
+    /// Check the bounds of the level with the aliens from the first and last columns. 
     /// </summary>
     private bool CheckLateralBounds()
     {
@@ -223,7 +253,7 @@ public class AlienArmy_Movement : MonoBehaviour
                 if (alienAnalized)
                 {
                     if (alienAnalized.isAlive)
-                        return (alienAnalized.rigidBody.position.x + (AlienArmy.alienSize.x + AlienArmy.distanceBetweenAliens.x) / 2f >= ScreenBounds.rightLevelBound);
+                        return (alienAnalized.rigidBody.position.x + (AlienArmy.alienSize.x + AlienArmy.distanceBetweenAliens.x) / 2f >= ScreenBounds.rightLevelBoundBeforeHUD);
                 }
             }
         }

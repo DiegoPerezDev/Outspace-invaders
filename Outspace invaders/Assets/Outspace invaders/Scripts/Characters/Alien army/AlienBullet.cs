@@ -2,11 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// This script is for both of the bullets shot by the aliens. 
+/// <para> There is one bullet that can be destroyed by the player's bullet and other one that doesn't.</para>
+/// </summary>
 public class AlienBullet : MonoBehaviour
 {
-    private float bulletVel;
-    [SerializeField] private bool invulnerable;
     [HideInInspector] public AlienArmy_AttackBehaviour alienArmy_AttackBehaviour;
+    [SerializeField] private bool invulnerable;
+    private float bulletVel;
 
     void Start()
     {
@@ -17,18 +21,17 @@ public class AlienBullet : MonoBehaviour
     {
         var collidedObjectTag = collision.gameObject.tag;
 
-        // Dont collide with enemies
+        // Dont collide with the aliens
         if (collidedObjectTag == "Enemy")
             return;
 
-        // Auto destruction by collision
-        if (!invulnerable)
+        if (!invulnerable || (invulnerable && collidedObjectTag != "PlayerAttack"))
+        {
+            if(alienArmy_AttackBehaviour)
+                alienArmy_AttackBehaviour.Shoot();
             Destroy(gameObject);
-        else if (collidedObjectTag != "PlayerBullet")
-            Destroy(gameObject);
-        AlienArmy_AttackBehaviour.shooting = false;
+        }
 
-        // Specific effects when colliding with certain gameObjects
         if (collidedObjectTag == "Player")
             Player.OnLosingLive?.Invoke();
         else if (collidedObjectTag == "Barricade")

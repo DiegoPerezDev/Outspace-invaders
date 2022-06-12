@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
+/// <summary>
+/// Manager of the menus for the main menu. There are other codes for other scenes like the 'LevelMenu_Management' for the levels.
+/// </summary>
 public class MainMenu_Management : MenuManagement
 {
     [SerializeField] private GameObject quitMenu, mainMenu;
@@ -11,21 +14,22 @@ public class MainMenu_Management : MenuManagement
 
     // - - - - MONOBEHAVIOUR METHODS - - - -
     void Awake() => buttonAudioClip = Resources.Load<AudioClip>($"Audio/UI_SFX/button");
-    void Start()
+    public override void Start()
     {
-        //openedMenus = new List<GameObject>();
-        openedMenus.Add(mainMenu);
-        openedMenus.Add(loadingScreen);
+        base.Start();
+        openedMenus.Insert(0, mainMenu);
     }
     public override void OnEnable()
     {
         base.OnEnable();
         GameManager.OnSceneLoaded += StartMainMenu;
+        GameManager.OnSceneLoaded += InputsManager.EnableMenuActionMaps;
     }
     public override void OnDisable()
     {
         base.OnDisable();
         GameManager.OnSceneLoaded -= StartMainMenu;
+        GameManager.OnSceneLoaded -= InputsManager.EnableMenuActionMaps;
     }   
 
     // - - - - START FUNCTIONS - - - -
@@ -45,7 +49,7 @@ public class MainMenu_Management : MenuManagement
         switch (buttonName)
         {
             case "play":
-                AudioManager.PlayAudio(AudioManager.UI_AudioSource, buttonAudioClip);
+                //AudioManager.PlayAudio(AudioManager.UI_AudioSource, buttonAudioClip);
                 GameManager.EnterScene(1);
                 break;
 

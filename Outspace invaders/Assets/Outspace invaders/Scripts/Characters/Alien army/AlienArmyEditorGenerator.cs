@@ -4,11 +4,14 @@ using UnityEngine;
 using UnityEditor;
 using System.Threading.Tasks;
 
+#if UNITY_EDITOR
 /// <summary>
-/// This class generates the gameObjects of the alien army every time the user change the inspector variables on edit mode. Also adds the main script of the army after instancing for their set up.
+/// This class generates the gameObjects of the alien army every time the user changes the inspector variables on edit mode.
+/// <para> IMPORTANT: This script is not required, its only for testing purposes.</para>
+/// <para> For the behaviour of the alien army there are other scripts attached in the same GameObject that contains this code.</para>
 /// </summary>
 [ExecuteInEditMode]
-public class AlienArmyGenerator : MonoBehaviour
+public class AlienArmyEditorGenerator : MonoBehaviour
 {
     public int armyRows = 5, armyColumns = 10;
     public Vector2 distanceBetweenAliens = new Vector2(0.3f, 0.3f);
@@ -16,10 +19,9 @@ public class AlienArmyGenerator : MonoBehaviour
     [SerializeField]  private GameObject alienPrefab;
     [SerializeField]  private RectTransform HUD_Panel;
     [SerializeField]  private float centerHeight;
+    private float leftScreenBound, rightLevelBoundBeforeHUD, upScreenBound;
+    private static AlienArmyEditorGenerator instance;
     private Vector2 centerPos;
-    private float leftScreenBound, rightLevelBound, upScreenBound;
-    private static AlienArmyGenerator instance;
-
 
     void Awake()
     {
@@ -28,8 +30,6 @@ public class AlienArmyGenerator : MonoBehaviour
             instance = this;
         else
             Destroy(this);
-
-        // Check all 
     }
     /// <summary>
     /// Try to re-create the alien army every time that the user change any variable value through inspector, except in playmode.
@@ -46,19 +46,13 @@ public class AlienArmyGenerator : MonoBehaviour
     async void OnValidateRestart()
     {
         await Task.Delay(50);
-        if(CheckComponentsNeeded())
+        if (alienPrefab != null && HUD_Panel != null)
             RestartAlienArmy();
         else
             print("Didn't get all of the components needed for this code to work");
     }
-    private bool CheckComponentsNeeded()
-    {
-        if (alienPrefab == null || HUD_Panel == null)
-            return false;
-        return true;
-    }
     /// <summary>
-    /// Create new army of aliens, destroying previus one to avoid multiple armys at the same time.
+    /// Create new army of aliens, destroying the previous one to avoid multiple armys at the same time.
     /// </summary>
     private void RestartAlienArmy()
     {
@@ -66,14 +60,7 @@ public class AlienArmyGenerator : MonoBehaviour
         if (EditorApplication.isPlaying)
             return;
 
-        // Dont continue the alien army restart if there is no alien prefab
-        if (alienPrefab == null)
-        {
-            print("Can't get alien army prefab, needed for generating alien army.");
-            return;
-        }
-
-        // Destroy existing alien armys if there are any
+        // Destroy existing alien army if there is one already created
         foreach(Transform child in GetComponentsInChildren<Transform>())
         {
             if (child == transform) continue;
@@ -92,9 +79,9 @@ public class AlienArmyGenerator : MonoBehaviour
         // Get data needed for instancing
         alienSize = alienPrefab.GetComponent<SpriteRenderer>().size * alienPrefab.transform.lossyScale;
         leftScreenBound = -(Camera.main.orthographicSize * 2 * Camera.main.aspect) / 2;
-        rightLevelBound = -leftScreenBound - (HUD_Panel.rect.size.x * HUD_Panel.lossyScale.x);
+        rightLevelBoundBeforeHUD = -leftScreenBound - (HUD_Panel.rect.size.x * HUD_Panel.lossyScale.x);
         upScreenBound = Camera.main.orthographicSize;
-        var levelWidth = (Mathf.Abs(leftScreenBound) + Mathf.Abs(rightLevelBound));
+        var levelWidth = (Mathf.Abs(leftScreenBound) + Mathf.Abs(rightLevelBoundBeforeHUD));
         centerPos = new Vector2((levelWidth / 2f) + leftScreenBound, centerHeight);
 
         // Evade math errors with variable values
@@ -102,14 +89,13 @@ public class AlienArmyGenerator : MonoBehaviour
         if (armyRows < 1) armyRows = 1;
         if (distanceBetweenAliens.x < 0) distanceBetweenAliens.x = 0;
         if (distanceBetweenAliens.y < 0) distanceBetweenAliens.y = 0;
-
         // - Limit the center position values
         if ((centerPos.y + alienSize.y + distanceBetweenAliens.y / 2) > upScreenBound)
             centerPos.y = upScreenBound - alienSize.y - distanceBetweenAliens.y / 2;
         else if ((centerPos.y - alienSize.y - distanceBetweenAliens.y / 2) < -upScreenBound)
             centerPos.y = -upScreenBound + alienSize.y + distanceBetweenAliens.y / 2;
-        if ((centerPos.x + alienSize.x + distanceBetweenAliens.x / 2) > rightLevelBound)
-            centerPos.x = rightLevelBound - alienSize.x - distanceBetweenAliens.x / 2;
+        if ((centerPos.x + alienSize.x + distanceBetweenAliens.x / 2) > rightLevelBoundBeforeHUD)
+            centerPos.x = rightLevelBoundBeforeHUD - alienSize.x - distanceBetweenAliens.x / 2;
         else if ((centerPos.x - alienSize.x - distanceBetweenAliens.x / 2) < leftScreenBound)
             centerPos.x = leftScreenBound + alienSize.y + distanceBetweenAliens.y / 2;
     }
@@ -118,12 +104,13 @@ public class AlienArmyGenerator : MonoBehaviour
     /// </summary>
     private void InstantiateAliensInOrder()
     {
+        // Set the first alien as the one in the upper left corner of the aliens grid
         var firstPos = new Vector2();
         firstPos.x = -((alienSize.x / 2) + (distanceBetweenAliens.x / 2)) * (armyColumns - 1);
         firstPos.y = ((alienSize.y / 2) + (distanceBetweenAliens.y / 2)) * (armyRows - 1);
 
         // Evate creating aliens outside the screen
-        if ( (centerPos.x + firstPos.x - alienSize.x / 2 < leftScreenBound) || (centerPos.x - firstPos.x + alienSize.x/2 > rightLevelBound) )
+        if ( (centerPos.x + firstPos.x - alienSize.x / 2 < leftScreenBound) || (centerPos.x - firstPos.x + alienSize.x/2 > rightLevelBoundBeforeHUD) )
         {
             if (armyColumns > 1) // evade endless iteration 
             {
@@ -142,32 +129,26 @@ public class AlienArmyGenerator : MonoBehaviour
             }
         }
 
-        // Instantiate the first alien, the one that tells us the position of the first row and the first column
+        // Instantiate the aliens in order
         var firstAlienPos = new Vector2(centerPos.x + firstPos.x, centerPos.y + firstPos.y);
-        var instantiatedAlien = Instantiate(alienPrefab, transform);
-        instantiatedAlien.transform.position = firstAlienPos;
-
-        // Instantiate the rest of the aliens in order
         var currentInstancingPosition = firstAlienPos;
+        GameObject instantiatedAlien;
         for (int i = 0; i < armyRows; i++)
         {
             for (int j = 0; j < armyColumns; j++)
             {
-                // First alien already instantiated
-                if (i == 0 && j == 0) 
-                    continue;
-
                 // Instance new alien
                 instantiatedAlien = Instantiate(alienPrefab, transform);
 
-                // Positioning aliens through the same row, if they are not the first one in the row
+                // Change row position
                 if (j != 0)
                     currentInstancingPosition += new Vector2(alienSize.x + distanceBetweenAliens.x, 0f);
                 instantiatedAlien.transform.position = currentInstancingPosition;
             }
-            // Positioning aliens from the first column each one in a new row
+            // Change column position
             currentInstancingPosition = new Vector2(firstAlienPos.x, currentInstancingPosition.y - alienSize.y - distanceBetweenAliens.y);
         }
     }
 
 }
+#endif
